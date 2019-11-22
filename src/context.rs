@@ -1,4 +1,4 @@
-use crate::widgets::{RawWidget, Widget};
+use crate::widgets::{Widget, WidgetConfig};
 use indexmap::IndexMap;
 use quicksilver::{geom::Vector, graphics::Image, input::MouseCursor, lifecycle::Window};
 pub struct Response<R> {
@@ -136,7 +136,7 @@ impl<'a> Context<'a> {
     }
     pub fn add_widget<R, W, Res>(&mut self, widget: R, layer_id: u64) -> Result<Response<Res>, ()>
     where
-        R: RawWidget<Res, W>,
+        R: WidgetConfig<Res, W>,
         W: Widget + 'a,
         Res: Sized,
     {

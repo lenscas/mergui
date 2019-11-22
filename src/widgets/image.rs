@@ -1,11 +1,11 @@
-use super::{RawWidget, Widget};
+use super::{Widget, WidgetConfig};
 use crate::Assets;
 use quicksilver::prelude::{Img, Rectangle, Transform, Vector, Window};
 pub struct Image {
     pub image: String,
     pub location: Rectangle,
 }
-impl RawWidget<(), Image> for Image {
+impl WidgetConfig<(), Image> for Image {
     fn to_widget(self) -> (Image, ()) {
         (self, ())
     }

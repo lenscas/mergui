@@ -1,7 +1,7 @@
 use crate::Assets;
 use quicksilver::{geom::Vector, lifecycle::Window};
 
-pub trait RawWidget<R: Sized, W: Widget> {
+pub trait WidgetConfig<R: Sized, W: Widget> {
     fn to_widget(self) -> (W, R);
 }
 
