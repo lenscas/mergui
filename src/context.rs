@@ -36,45 +36,84 @@ impl<'a> Context<'a> {
         self.last_layer_id
     }
     pub fn get_focused_widget(&mut self) -> Option<&mut Box<dyn Widget + 'a>> {
-        println!("Widget with focus : {:?}", self.widget_with_focus);
         self.widget_with_focus
             .and_then(move |v| self.to_display.get_mut(&v.0).and_then(|x| x.get_mut(&v.1)))
     }
+    pub fn get_widgets<'b>(
+        widgets: &'b IndexMap<u64, IndexMap<u64, Box<dyn Widget + 'a>>>,
+    ) -> Vec<((u64, u64), &'b Box<dyn Widget + 'a>)> {
+        widgets
+            .iter()
+            .flat_map(|(layer_id, widgets)| {
+                widgets
+                    .iter()
+                    .map(move |(widget_id, widget)| ((layer_id, widget_id), widget))
+            })
+            .map(|(id, widget)| ((*id.0, *id.1), widget))
+            .collect()
+    }
+    pub fn get_widgets_mut<'b>(
+        widgets: &'b mut IndexMap<u64, IndexMap<u64, Box<dyn Widget + 'a>>>,
+    ) -> Vec<((u64, u64), &'b mut Box<dyn Widget + 'a>)> {
+        widgets
+            .iter_mut()
+            .flat_map(|(layer_id, widgets)| {
+                widgets
+                    .iter_mut()
+                    .map(move |(widget_id, widget)| ((layer_id, widget_id), widget))
+            })
+            .map(|(id, widget)| ((*id.0, *id.1), widget))
+            .collect()
+    }
     pub fn event(&mut self, event: &quicksilver::lifecycle::Event, window: &mut Window) {
+        use quicksilver::input::ButtonState;
+        use quicksilver::input::MouseButton;
         use quicksilver::lifecycle::Event::*;
         match event {
             MouseMoved(val) => {
-                let mut cursor = MouseCursor::Default;
-                for (_, layer) in &self.to_display {
-                    for (_, widget) in layer {
-                        if widget.contains(&val) {
-                            cursor = widget.get_cursor_on_hover();
-                        }
-                    }
-                }
+                let widgets = Context::get_widgets_mut(&mut self.to_display);
+                window.set_cursor(
+                    widgets
+                        .iter()
+                        .filter(|(_, widget)| widget.contains(&val))
+                        .map(|(_, widget)| widget)
+                        .collect::<Vec<_>>()
+                        .pop()
+                        .map(|widget| widget.get_cursor_on_hover())
+                        .unwrap_or(MouseCursor::Default),
+                );
                 self.mouse_cursor = *val;
-                window.set_cursor(cursor);
             }
-            MouseButton(button, state) => {
-                if let quicksilver::input::MouseButton::Left = button {
-                    if let quicksilver::input::ButtonState::Pressed = state {
-                        let mut set_focus = None;
-                        'outer: for (layer_id, layer) in self.to_display.iter_mut() {
-                            for (widget_key, widget) in layer.iter_mut() {
-                                if widget.contains(&self.mouse_cursor) {
-                                    widget.on_click(&self.mouse_cursor);
-                                    let focus = widget.is_focusable();
-                                    println!("has focus : {:?}", focus);
-                                    if focus {
-                                        set_focus = Some((*layer_id, *widget_key));
-                                        break 'outer;
-                                    }
-                                }
-                            }
+            MouseButton(MouseButton::Left, ButtonState::Pressed) => {
+                let cursor = &self.mouse_cursor;
+                let mut widgets = Context::get_widgets_mut(&mut self.to_display);
+                let mut maybe_focused_widgets: Vec<_> = widgets
+                    .iter_mut()
+                    .filter_map(|(id, widget)| {
+                        let contains = widget.contains(cursor);
+                        let is_focusable = widget.is_focusable();
+                        if contains {
+                            Some((id, widget, is_focusable))
+                        } else {
+                            widget.set_focus(false);
+                            None
                         }
-                        self.widget_with_focus = set_focus;
-                    }
-                }
+                    })
+                    .filter(|(_, _, can_focus)| *can_focus)
+                    .map(|(id, widget, _)| (id, widget))
+                    .collect();
+                let cursor = &self.mouse_cursor;
+                self.widget_with_focus = maybe_focused_widgets.pop().map(|(id, widget)| {
+                    widget.set_focus(true);
+                    widget.on_click(cursor);
+                    (id.0, id.1)
+                });
+                maybe_focused_widgets
+                    .iter_mut()
+                    .for_each(|(_, widget)| widget.set_focus(false));
+            }
+            MouseButton(_, _) => {
+                //we don't handle other mouse buttons/states (yet)
             }
             Key(key, state) => {
                 self.get_focused_widget()
@@ -89,12 +128,11 @@ impl<'a> Context<'a> {
     pub fn remove_layer(&mut self) {}
     pub fn render<Store: Assets>(&self, assets: &Store, window: &mut Window) {
         let mut z = self.start_z;
-        for (_, layer) in &self.to_display {
-            for (_, widget) in layer {
-                widget.render(assets, window, z);
-                z += 1;
-            }
-        }
+        let widgets = Context::get_widgets(&self.to_display);
+        widgets.iter().for_each(|(_, widget)| {
+            widget.render(assets, window, z);
+            z += 1;
+        });
     }
     pub fn add_widget<R, W, Res>(&mut self, widget: R, layer_id: u64) -> Result<Response<Res>, ()>
     where
