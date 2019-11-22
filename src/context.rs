@@ -99,18 +99,25 @@ impl<'a> Context<'a> {
                             None
                         }
                     })
-                    .filter(|(_, _, can_focus)| *can_focus)
-                    .map(|(id, widget, _)| (id, widget))
                     .collect();
                 let cursor = &self.mouse_cursor;
-                self.widget_with_focus = maybe_focused_widgets.pop().map(|(id, widget)| {
-                    widget.set_focus(true);
-                    widget.on_click(cursor);
-                    (id.0, id.1)
-                });
+                self.widget_with_focus =
+                    maybe_focused_widgets
+                        .pop()
+                        .map(|(id, widget, is_focusable)| {
+                            if is_focusable {
+                                widget.set_focus(true)
+                            };
+                            widget.on_click(cursor);
+                            (id.0, id.1)
+                        });
                 maybe_focused_widgets
                     .iter_mut()
-                    .for_each(|(_, widget)| widget.set_focus(false));
+                    .for_each(|(_, widget, is_focusable)| {
+                        if *is_focusable {
+                            widget.set_focus(false)
+                        }
+                    });
             }
             MouseButton(_, _) => {
                 //we don't handle other mouse buttons/states (yet)
