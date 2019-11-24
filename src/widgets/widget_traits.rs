@@ -13,6 +13,7 @@ pub trait Widget {
         quicksilver::input::MouseCursor::Default
     }
     fn set_focus(&mut self, _: bool) {}
+    fn set_hover(&mut self, _: bool) {}
     fn on_click(&mut self, _location: &Vector) {}
     fn on_key_press(
         &mut self,
