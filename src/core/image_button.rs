@@ -5,6 +5,8 @@ use crate::{
 };
 
 use quicksilver::prelude::{Blended, Color, Img, Rectangle, Transform, Vector, Window};
+
+///Similar to the Image widget, except it notifies back when the user clicked on it.
 pub struct ImageButtonConfig {
     pub image: String,
     pub color: Option<Color>,

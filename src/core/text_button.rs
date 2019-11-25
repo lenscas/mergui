@@ -4,6 +4,8 @@ use crate::{
     Assets,
 };
 use quicksilver::prelude::{Image, Img, Rectangle, Transform, Vector, Window};
+
+///Is used to render text to the screen that the user can click on.
 pub struct TextButtonConfig {
     pub text: Image,
     pub location: Rectangle,

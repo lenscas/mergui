@@ -8,12 +8,19 @@ use crate::{
     Assets,
 };
 use quicksilver::prelude::{Color, Image, Rectangle, Vector, Window};
+
 pub struct ButtonConfig {
+    ///The text that will be rendered
     pub text: Image,
+    ///the name of the image for the background.
     pub background: String,
+    ///where the text needs to be rendered
     pub text_location: Rectangle,
+    ///where the background needs to be rendered
     pub background_location: Rectangle,
+    ///optionally, the color that the background needs to blend with
     pub blend_color: Option<Color>,
+    ///optionally, the color the background needs to blend with if the user hovers over it
     pub hover_color: Option<Color>,
 }
 

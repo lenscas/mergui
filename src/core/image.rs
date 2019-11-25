@@ -1,8 +1,13 @@
-use super::{Widget, WidgetConfig};
-use crate::Assets;
+use crate::{
+    widgets::{Widget, WidgetConfig},
+    Assets,
+};
 use quicksilver::prelude::{Img, Rectangle, Transform, Vector, Window};
+///A simple unfocusable, uninteractable image.
 pub struct Image {
+    ///name of the image that needs to be rendered
     pub image: String,
+    ///location and size that will be used to render the image
     pub location: Rectangle,
 }
 impl WidgetConfig<(), Image> for Image {
@@ -11,11 +16,8 @@ impl WidgetConfig<(), Image> for Image {
     }
 }
 impl Widget for Image {
-    fn contains(&self, point: &Vector) -> bool {
-        point.x >= self.location.pos.x
-            && point.y >= self.location.pos.y
-            && point.x <= self.location.pos.x + self.location.size.x
-            && point.y <= self.location.pos.y + self.location.size.y
+    fn contains(&self, _: &Vector) -> bool {
+        false
     }
     fn is_focusable(&self) -> bool {
         false

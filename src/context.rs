@@ -1,8 +1,12 @@
 use crate::widgets::{Widget, WidgetConfig};
 use indexmap::IndexMap;
 use quicksilver::{geom::Vector, graphics::Image, input::MouseCursor, lifecycle::Window};
+
+/// This is the struct that gets returned when a widget is added to the context.
 pub struct Response<R> {
+    ///This is used to comunicate with the widget
     pub channel: R,
+    ///This is the id of the widget, allowing you to remove it from the context
     pub id: (u64, u64),
 }
 struct Layer<'a> {
@@ -35,10 +39,11 @@ impl<'a> Layer<'a> {
         self.current_id
     }
 }
+///Used by widgets to get the image they need to render.
 pub trait Assets {
     fn get_image(&self, name: &str) -> &Image;
 }
-
+///This manages the GUI. It contains every widget that needs to be drawn and makes sure they are updated properly
 pub struct Context<'a> {
     start_z: u32,
     to_display: IndexMap<u64, Layer<'a>>,
@@ -48,6 +53,11 @@ pub struct Context<'a> {
 }
 
 impl<'a> Context<'a> {
+    ///Due to bug [434](https://github.com/ryanisaacg/quicksilver/issues/434) in quicksilver, the draw order of draw calls without a "z" value is unspecified
+    ///
+    ///To get arround this, the context will draw every widget with its own Z value.
+    ///
+    ///It draws the first widget with start_z and increases it by one for every widget, resseting this back to start_z every frame
     pub fn new(cursor: Vector, start_z: u32) -> Self {
         Self {
             to_display: IndexMap::new(),
@@ -57,13 +67,21 @@ impl<'a> Context<'a> {
             start_z,
         }
     }
+    ///Adds a layer that can hold multiple widgets.
+    ///Usefull to group widgets together that need to be removed at the same time
     pub fn add_layer(&mut self) -> u64 {
         self.last_layer_id += 1;
         self.to_display
             .insert(self.last_layer_id, Default::default());
         self.last_layer_id
     }
-    pub fn get_focused_widget(&mut self) -> Option<&mut Box<dyn Widget + 'a>> {
+    ///Removes a layer and every widget inside of it.
+    ///Usefull to remove multiple widgets at the same time
+    pub fn remove_layer(&mut self, layer_id: u64) {
+        self.to_display.remove(&layer_id);
+    }
+
+    fn get_focused_widget(&mut self) -> Option<&mut Box<dyn Widget + 'a>> {
         self.widget_with_focus
             .and_then(move |v| self.to_display.get_mut(&v.0).and_then(|x| x.get_mut(&v.1)))
     }
@@ -97,6 +115,7 @@ impl<'a> Context<'a> {
             .map(|(id, widget)| ((*id.0, *id.1), widget))
             .collect()
     }
+    ///Call this in the event function of the state to update every widget.
     pub fn event(&mut self, event: &quicksilver::lifecycle::Event, window: &mut Window) {
         use quicksilver::input::ButtonState;
         use quicksilver::input::MouseButton;
@@ -177,19 +196,20 @@ impl<'a> Context<'a> {
             _ => {}
         }
     }
-    pub fn remove_layer(&mut self, layer_id: u64) {
-        self.to_display.remove(&layer_id);
-    }
+    ///Set a layer to active or inactive.
+    ///Layers that are inactive won't be rendered or receive updates.
     pub fn set_layer_state(&mut self, layer_id: u64, state: bool) {
         self.to_display
             .get_mut(&layer_id)
             .map(|v| v.is_active = state);
     }
+    ///Removes a widget, meaning it won't be updated or drawn ever again
     pub fn remove_widget(&mut self, widget_id: (u64, u64)) {
         self.to_display
             .get_mut(&widget_id.0)
             .map(|v| v.remove(&widget_id.1));
     }
+    ///Call this in the render function of your state to render every widget
     pub fn render<Store: Assets>(&self, assets: &Store, window: &mut Window) {
         let mut z = self.start_z;
         let widgets = Context::get_widgets(&self.to_display);
@@ -198,6 +218,11 @@ impl<'a> Context<'a> {
             z += 1;
         });
     }
+    ///Adds a widget configuration to a given layer.
+    ///
+    ///Returns an Error if the layer does not exist.
+    ///
+    /// Otherwise, returns both the id of the widget AND a channel to comunicate with it.
     pub fn add_widget<R, W, Res>(&mut self, widget: R, layer_id: u64) -> Result<Response<Res>, ()>
     where
         R: WidgetConfig<Res, W>,

@@ -1,10 +1,11 @@
 use crate::Assets;
 use quicksilver::{geom::Vector, lifecycle::Window};
 
+///Turns a simple configuration into a real widget that can be drawn and interacted with.
 pub trait WidgetConfig<R: Sized, W: Widget> {
     fn to_widget(self) -> (W, R);
 }
-
+///This is the real widget. It isn't meant to interact directly with except when creating other widgets that exist of multiple smaller ones
 pub trait Widget {
     fn contains(&self, pos: &Vector) -> bool;
     fn is_focusable(&self) -> bool;
