@@ -1,9 +1,14 @@
 [package]
 name = "mergui"
+description = "A simple GUI system for use with the quicksilver game engine"
 version = "0.0.1"
 authors = ["lenscas <lenscas@gmail.com>"]
+categories = ["GUI"]
 edition = "2018"
-
+keywords = ["game", "gui", "quicksilver", "gamedev"]
+license = "MIT/Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/lenscas/mergui"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
