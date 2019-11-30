@@ -13,4 +13,4 @@ repository = "https://github.com/lenscas/mergui"
 
 [dependencies]
 indexmap = "1.3.0"
-quicksilver = "*"
+quicksilver = "^0.3.20"
