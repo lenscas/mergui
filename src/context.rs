@@ -1,18 +1,16 @@
-use crate::widgets::{Widget, WidgetConfig};
+use crate::{
+    widgets::{Widget, WidgetConfig},
+    LayerChannelReceiver, LayerChannelSender, LayerId, LayerInstructions, LayerNummerId, Response,
+    WidgetChannelReceiver, WidgetChannelSender, WidgetId, WidgetNummerId,
+};
 use indexmap::IndexMap;
 use quicksilver::{geom::Vector, graphics::Image, input::MouseCursor, lifecycle::Window};
+use std::sync::mpsc;
 
-/// This is the struct that gets returned when a widget is added to the context.
-pub struct Response<R> {
-    ///This is used to comunicate with the widget
-    pub channel: R,
-    ///This is the id of the widget, allowing you to remove it from the context
-    pub id: (u64, u64),
-}
 struct Layer<'a> {
     is_active: bool,
-    widgets: IndexMap<u64, Box<dyn Widget + 'a>>,
-    current_id: u64,
+    widgets: IndexMap<WidgetNummerId, Box<dyn Widget + 'a>>,
+    current_id: LayerNummerId,
 }
 impl<'a> Default for Layer<'a> {
     fn default() -> Self {
@@ -46,10 +44,14 @@ pub trait Assets {
 ///This manages the GUI. It contains every widget that needs to be drawn and makes sure they are updated properly
 pub struct Context<'a> {
     start_z: u32,
-    to_display: IndexMap<u64, Layer<'a>>,
+    to_display: IndexMap<LayerNummerId, Layer<'a>>,
     widget_with_focus: Option<(u64, u64)>,
     last_layer_id: u64,
     mouse_cursor: Vector,
+    layer_channel: LayerChannelReceiver,
+    layer_channel_creator: LayerChannelSender,
+    widget_channel: WidgetChannelReceiver,
+    widget_channel_creator: WidgetChannelSender,
 }
 
 impl<'a> Context<'a> {
@@ -59,26 +61,28 @@ impl<'a> Context<'a> {
     ///
     ///It draws the first widget with start_z and increases it by one for every widget, resseting this back to start_z every frame
     pub fn new(cursor: Vector, start_z: u32) -> Self {
+        let (layer_send, layer_rec) = mpsc::channel();
+        let (widget_send, widget_rec) = mpsc::channel();
         Self {
             to_display: IndexMap::new(),
             widget_with_focus: None,
             last_layer_id: 0,
             mouse_cursor: cursor,
             start_z,
+            layer_channel: layer_rec,
+            layer_channel_creator: layer_send,
+            widget_channel: widget_rec,
+            widget_channel_creator: widget_send,
         }
     }
     ///Adds a layer that can hold multiple widgets.
     ///Usefull to group widgets together that need to be removed at the same time
-    pub fn add_layer(&mut self) -> u64 {
+    pub fn add_layer(&mut self) -> LayerId {
         self.last_layer_id += 1;
         self.to_display
             .insert(self.last_layer_id, Default::default());
-        self.last_layer_id
-    }
-    ///Removes a layer and every widget inside of it.
-    ///Usefull to remove multiple widgets at the same time
-    pub fn remove_layer(&mut self, layer_id: u64) {
-        self.to_display.remove(&layer_id);
+
+        LayerId::new(self.last_layer_id, self.layer_channel_creator.clone())
     }
 
     fn get_focused_widget(&mut self) -> Option<&mut Box<dyn Widget + 'a>> {
@@ -115,8 +119,43 @@ impl<'a> Context<'a> {
             .map(|(id, widget)| ((*id.0, *id.1), widget))
             .collect()
     }
+    fn handle_extern_events(&mut self) {
+        self.handle_layer_events();
+        self.handle_widget_events();
+    }
+    fn handle_widget_events(&mut self) {
+        use crate::WidgetInstruction;
+        let channel = &self.widget_channel;
+
+        for event in channel.try_iter() {
+            let id = event.0;
+            let layer = id.0;
+            let id = id.1;
+            match event.1 {
+                WidgetInstruction::Drop => {
+                    self.to_display.get_mut(&layer).map(|v| v.remove(&id));
+                }
+            }
+        }
+    }
+    fn handle_layer_events(&mut self) {
+        let channel = &self.layer_channel;
+        for event in channel.try_iter() {
+            let id = event.0;
+            match event.1 {
+                LayerInstructions::Drop => {
+                    self.to_display.remove(&id);
+                }
+                LayerInstructions::SetIsActive(state) => {
+                    self.to_display.get_mut(&id).map(|v| v.is_active = state);
+                }
+            }
+        }
+    }
     ///Call this in the event function of the state to update every widget.
     pub fn event(&mut self, event: &quicksilver::lifecycle::Event, window: &mut Window) {
+        self.handle_extern_events();
+
         use quicksilver::input::ButtonState;
         use quicksilver::input::MouseButton;
         use quicksilver::lifecycle::Event::*;
@@ -196,21 +235,9 @@ impl<'a> Context<'a> {
             _ => {}
         }
     }
-    ///Set a layer to active or inactive.
-    ///Layers that are inactive won't be rendered or receive updates.
-    pub fn set_layer_state(&mut self, layer_id: u64, state: bool) {
-        self.to_display
-            .get_mut(&layer_id)
-            .map(|v| v.is_active = state);
-    }
-    ///Removes a widget, meaning it won't be updated or drawn ever again
-    pub fn remove_widget(&mut self, widget_id: (u64, u64)) {
-        self.to_display
-            .get_mut(&widget_id.0)
-            .map(|v| v.remove(&widget_id.1));
-    }
     ///Call this in the render function of your state to render every widget
-    pub fn render<Store: Assets>(&self, assets: &Store, window: &mut Window) {
+    pub fn render<Store: Assets>(&mut self, assets: &Store, window: &mut Window) {
+        self.handle_widget_events();
         let mut z = self.start_z;
         let widgets = Context::get_widgets(&self.to_display);
         widgets.iter().for_each(|(_, widget)| {
@@ -223,18 +250,26 @@ impl<'a> Context<'a> {
     ///Returns an Error if the layer does not exist.
     ///
     /// Otherwise, returns both the id of the widget AND a channel to comunicate with it.
-    pub fn add_widget<R, W, Res>(&mut self, widget: R, layer_id: u64) -> Result<Response<Res>, ()>
+    pub fn add_widget<R, W, Res>(
+        &mut self,
+        widget: R,
+        layer_id: &LayerId,
+    ) -> Result<Response<Res>, ()>
     where
         R: WidgetConfig<Res, W>,
         W: Widget + 'a,
         Res: Sized,
     {
-        match self.to_display.get_mut(&layer_id) {
+        match self.to_display.get_mut(&layer_id.id) {
             Some(layer) => {
                 let (widget, res) = widget.to_widget();
                 Ok(Response {
                     channel: res,
-                    id: (layer_id, layer.insert(Box::new(widget))),
+                    id: WidgetId::new(
+                        layer_id.id,
+                        layer.insert(Box::new(widget)),
+                        self.widget_channel_creator.clone(),
+                    ),
                 })
             }
             _ => Err(()),
