@@ -8,13 +8,13 @@ pub trait WidgetConfig<R: Sized, W: Widget> {
 ///This is the real widget. It isn't meant to interact directly with except when creating other widgets that exist of multiple smaller ones
 pub trait Widget {
     fn contains(&self, pos: &Vector) -> bool;
-    fn is_focusable(&self) -> bool;
+    fn is_focusable(&self, pos: &Vector) -> bool;
     fn render(&self, assets: &dyn Assets, window: &mut Window, z: u32);
     fn get_cursor_on_hover(&self) -> quicksilver::input::MouseCursor {
         quicksilver::input::MouseCursor::Default
     }
-    fn set_focus(&mut self, _: bool) {}
-    fn set_hover(&mut self, _: bool) {}
+    fn set_focus(&mut self, _: &Vector, _: bool) {}
+    fn set_hover(&mut self, _: &Vector, _: bool) {}
     fn on_click(&mut self, _location: &Vector) {}
     fn on_key_press(
         &mut self,

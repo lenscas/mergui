@@ -63,10 +63,10 @@ impl Widget for Button {
 
         contains
     }
-    fn is_focusable(&self) -> bool {
+    fn is_focusable(&self, _: &Vector) -> bool {
         false
     }
-    fn set_hover(&mut self, hover: bool) {
+    fn set_hover(&mut self, _: &Vector, hover: bool) {
         self.background.is_hovering = hover;
     }
     fn render(&self, assets: &dyn Assets, window: &mut Window, z: u32) {
