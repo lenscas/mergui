@@ -19,7 +19,7 @@ impl Widget for Image {
     fn contains(&self, _: &Vector) -> bool {
         false
     }
-    fn is_focusable(&self) -> bool {
+    fn is_focusable(&self, _: &Vector) -> bool {
         false
     }
     fn render(&self, assets: &dyn Assets, window: &mut Window, z: u32) {

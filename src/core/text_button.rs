@@ -36,7 +36,7 @@ impl Widget for TextButton {
             && point.x <= self.button.location.pos.x + self.button.location.size.x
             && point.y <= self.button.location.pos.y + self.button.location.size.y
     }
-    fn is_focusable(&self) -> bool {
+    fn is_focusable(&self, _: &Vector) -> bool {
         false
     }
     fn render(&self, _: &dyn Assets, window: &mut Window, z: u32) {

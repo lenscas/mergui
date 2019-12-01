@@ -161,6 +161,7 @@ impl<'a> Context<'a> {
         use quicksilver::lifecycle::Event::*;
         match event {
             MouseMoved(val) => {
+                let cursor_location = &self.mouse_cursor;
                 let mut widgets = Context::get_widgets_mut(&mut self.to_display);
                 let mut widgets = widgets
                     .iter_mut()
@@ -169,7 +170,7 @@ impl<'a> Context<'a> {
                         if does_hover {
                             Some(widget)
                         } else {
-                            widget.set_hover(false);
+                            widget.set_hover(cursor_location, false);
                             None
                         }
                     })
@@ -178,11 +179,13 @@ impl<'a> Context<'a> {
                 let cursor = widgets
                     .pop()
                     .map(|widget| {
-                        widget.set_hover(true);
+                        widget.set_hover(cursor_location, true);
                         widget.get_cursor_on_hover()
                     })
                     .unwrap_or(MouseCursor::Default);
-                widgets.iter_mut().for_each(|v| v.set_hover(false));
+                widgets
+                    .iter_mut()
+                    .for_each(|v| v.set_hover(cursor_location, false));
 
                 window.set_cursor(cursor);
                 self.mouse_cursor = *val;
@@ -194,11 +197,11 @@ impl<'a> Context<'a> {
                     .iter_mut()
                     .filter_map(|(id, widget)| {
                         let contains = widget.contains(cursor);
-                        let is_focusable = widget.is_focusable();
+                        let is_focusable = widget.is_focusable(cursor);
                         if contains {
                             Some((id, widget, is_focusable))
                         } else {
-                            widget.set_focus(false);
+                            widget.set_focus(cursor, false);
                             None
                         }
                     })
@@ -209,7 +212,7 @@ impl<'a> Context<'a> {
                         .pop()
                         .map(|(id, widget, is_focusable)| {
                             if is_focusable {
-                                widget.set_focus(true)
+                                widget.set_focus(cursor, true)
                             };
                             widget.on_click(cursor);
                             (id.0, id.1)
@@ -218,7 +221,7 @@ impl<'a> Context<'a> {
                     .iter_mut()
                     .for_each(|(_, widget, is_focusable)| {
                         if *is_focusable {
-                            widget.set_focus(false)
+                            widget.set_focus(cursor, false)
                         }
                     });
             }
