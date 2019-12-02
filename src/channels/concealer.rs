@@ -1,4 +1,5 @@
 use super::{BasicClickable, Clickable};
+use std::sync::{Arc, Mutex};
 
 pub trait Concealer<T: PartialEq, R: Sized> {
     fn set_concealed(&mut self, new_consealed_state: bool);
@@ -9,16 +10,24 @@ pub trait Concealer<T: PartialEq, R: Sized> {
     fn iter(&self) -> std::slice::Iter<(T, R)>;
 }
 pub struct ConcealerReturn<T: PartialEq, R: Sized> {
-    pub(crate) is_concealing: bool,
+    pub(crate) is_concealing: Arc<Mutex<bool>>,
     pub(crate) items: Vec<(T, R)>,
     pub(crate) main_button: BasicClickable,
 }
 impl<T: PartialEq, R: Sized> Concealer<T, R> for ConcealerReturn<T, R> {
     fn set_concealed(&mut self, new_consealed_state: bool) {
-        self.is_concealing = new_consealed_state;
+        let locked = self.is_concealing.lock();
+        match locked {
+            Ok(mut res) => *res = new_consealed_state,
+            Err(_) => {}
+        }
     }
     fn is_concealing(&self) -> bool {
-        self.is_concealing
+        let locked = self.is_concealing.lock();
+        match locked {
+            Ok(res) => res.clone(),
+            Err(x) => x.into_inner().clone(),
+        }
     }
     fn get_item(&self, key: T) -> Option<&R> {
         self.items
