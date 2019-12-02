@@ -7,7 +7,9 @@ use std::{
 };
 ///A button that will hide/unhide other widgets when the user clicks on it
 pub struct ConcealerConfig<T: PartialEq, R: Sized, W: Widget, E: WidgetConfig<R, W>> {
+    ///A button that when clicked will hide/unhide the other widgets
     pub button: ButtonConfig,
+    ///the widgets that can be hidden or shown
     pub hidden_widgets: Vec<(T, E)>,
     pub to_widget: PhantomData<W>,
     pub to_result: PhantomData<R>,
