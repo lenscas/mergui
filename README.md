@@ -9,4 +9,8 @@ This project is created to fill in the gap until a better compatible library sho
 
 ## Widgets
 
-Right now it can only be used for buttons, but more widgets are planned.
+Right now there are only 3 types of widgets: Buttons, Concealers and images.
+
+There are 3 types of buttons. Ones that can be used to render an image, one for text and one that does both.
+
+A concealer gets a list of other Widgets and a button. The button toggles the visibility and interactivity of the other widgets.
