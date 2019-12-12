@@ -10,8 +10,8 @@ pub trait Widget {
     fn contains(&self, pos: &Vector) -> bool;
     fn is_focusable(&self, pos: &Vector) -> bool;
     fn render(&self, assets: &dyn Assets, window: &mut Window, z: u32);
-    fn get_cursor_on_hover(&self) -> quicksilver::input::MouseCursor {
-        quicksilver::input::MouseCursor::Default
+    fn get_cursor_on_hover(&self, _: &Vector) -> quicksilver::input::MouseCursor {
+        Default::default()
     }
     fn set_focus(&mut self, _: &Vector, _: bool) {}
     fn set_hover(&mut self, _: &Vector, _: bool) {}

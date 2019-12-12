@@ -90,21 +90,29 @@ impl<W: Widget> Widget for Concealer<W> {
     }
     fn on_click(&mut self, clicked_on: &Vector) {
         if self.button.contains(clicked_on) {
-            match self.is_concealing.lock() {
-                Ok(mut x) => *x = !*x,
-                Err(x) => {
-                    let mut x = x.into_inner();
-                    *x = !*x
-                }
-            }
+            self.set_concealing(
+                !self
+                    .is_concealing
+                    .lock()
+                    .map(|v| *v)
+                    .unwrap_or_else(|v| *v.into_inner()),
+            );
             self.button.on_click(clicked_on);
         } else if !self.is_concealing() {
             self.get_mut_widget_at(clicked_on)
                 .map(|widget| widget.on_click(clicked_on));
         }
     }
-    fn get_cursor_on_hover(&self) -> quicksilver::input::MouseCursor {
-        quicksilver::input::MouseCursor::Hand
+    fn get_cursor_on_hover(&self, pos: &Vector) -> quicksilver::input::MouseCursor {
+        if self.button.contains(pos) {
+            self.button.get_cursor_on_hover(pos)
+        } else {
+            self.hidden_widgets
+                .iter()
+                .find(|v| v.contains(pos))
+                .map(|v| v.get_cursor_on_hover(pos))
+                .unwrap_or_default()
+        }
     }
 }
 
@@ -121,6 +129,15 @@ impl<W: Widget> Concealer<W> {
         match self.is_concealing.lock() {
             Ok(x) => x.clone(),
             Err(x) => x.into_inner().clone(),
+        }
+    }
+    pub fn set_concealing(&mut self, state: bool) {
+        match self.is_concealing.lock() {
+            Ok(mut x) => *x = state,
+            Err(x) => {
+                let mut x = x.into_inner();
+                *x = state
+            }
         }
     }
 }

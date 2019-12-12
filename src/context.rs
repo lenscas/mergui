@@ -180,7 +180,7 @@ impl<'a> Context<'a> {
                     .pop()
                     .map(|widget| {
                         widget.set_hover(cursor_location, true);
-                        widget.get_cursor_on_hover()
+                        widget.get_cursor_on_hover(cursor_location)
                     })
                     .unwrap_or(MouseCursor::Default);
                 widgets

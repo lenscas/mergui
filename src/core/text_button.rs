@@ -50,7 +50,7 @@ impl Widget for TextButton {
     fn on_click(&mut self, _location: &Vector) {
         self.channel.clicked();
     }
-    fn get_cursor_on_hover(&self) -> quicksilver::input::MouseCursor {
+    fn get_cursor_on_hover(&self, _: &Vector) -> quicksilver::input::MouseCursor {
         quicksilver::input::MouseCursor::Hand
     }
 }
