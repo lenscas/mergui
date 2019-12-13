@@ -240,7 +240,7 @@ impl<'a> Context<'a> {
     }
     ///Call this in the render function of your state to render every widget
     pub fn render<Store: Assets>(&mut self, assets: &Store, window: &mut Window) {
-        self.handle_widget_events();
+        self.handle_extern_events();
         let mut z = self.start_z;
         let widgets = Context::get_widgets(&self.to_display);
         widgets.iter().for_each(|(_, widget)| {
