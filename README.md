@@ -1,4 +1,5 @@
 # Mergui
+
 A simple gui system for the quicksilver engine, developed for use in [Arena keeper](https://github.com/lenscas/arena_keeper_quick)
 
 ## Why
@@ -9,8 +10,10 @@ This project is created to fill in the gap until a better compatible library sho
 
 ## Widgets
 
-Right now there are only 3 types of widgets: Buttons, Concealers and images.
+Right now there are only 4 types of widgets: Buttons, Concealers, images and a dropdown.
 
 There are 3 types of buttons. Ones that can be used to render an image, one for text and one that does both.
 
 A concealer gets a list of other Widgets and a button. The button toggles the visibility and interactivity of the other widgets.
+
+A dropdown gets a list of values that the user can select from and allows the user to select one of the given values.

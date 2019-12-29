@@ -14,3 +14,9 @@ pub(crate) use responses::{
     WidgetChannelReceiver, WidgetChannelSender, WidgetInstruction, WidgetNummerId,
 };
 pub use responses::{LayerId, Response, WidgetId};
+
+use std::sync::{Arc, Mutex, MutexGuard};
+
+pub(crate) fn force_mutex<T>(val: &Arc<Mutex<T>>) -> MutexGuard<T> {
+    val.lock().unwrap_or_else(|v| v.into_inner())
+}
