@@ -17,7 +17,9 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 ## _[Unreleased]_
 
-_nothing new to show for… yet!_
+- feat: Add Text widget ([`92c9995`])
+- feat: Add dropdown widget ([`40c145f`])
+- chore: Update changelog ([`0c0ba84`])
 
 ## [0.0.4] – _(cargo-release) mergui version 0.0.4_
 
@@ -57,6 +59,9 @@ _2019.12.12_
 
 <!-- [commits] -->
 
+[`92c9995`]: #/commit/92c999521ef453cd8bce57e6ec1ccffa1e934115
+[`40c145f`]: #/commit/40c145f47c0fc5eb173c6cb153ab4541ea20d117
+[`0c0ba84`]: #/commit/0c0ba84d87e2c5d594dd22a655777435f65bb91f
 [`80da6b6`]: #/commit/80da6b6557a7b3ad4b7544f54a29f7c362cf8c12
 [`d16d7c9`]: #/commit/d16d7c97e65c7518d0eaa4578b5cbbb37073a36f
 [`bd8fc46`]: #/commit/bd8fc4695d95bfdaceb830197236603fe067ce35
