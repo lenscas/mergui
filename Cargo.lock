@@ -1215,7 +1215,7 @@ name = "mergui"
 version = "0.0.6-alpha.0"
 dependencies = [
  "indexmap 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "quicksilver 0.3.20 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quicksilver 0.3.22 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1548,7 +1548,7 @@ dependencies = [
 
 [[package]]
 name = "quicksilver"
-version = "0.3.20"
+version = "0.3.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "base64 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2763,7 +2763,7 @@ dependencies = [
 "checksum precomputed-hash 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "925383efa346730478fb4838dbe9137d2a47675ad789c546d150a6e1dd4ab31c"
 "checksum proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)" = "cf3d2011ab5c909338f7887f4fc896d35932e29146c12c8d01da6b22a80ba759"
 "checksum proc-macro2 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)" = "9c9e470a8dc4aeae2dee2f335e8f533e2d4b347e1434e5671afc49b054592f27"
-"checksum quicksilver 0.3.20 (registry+https://github.com/rust-lang/crates.io-index)" = "f2885bb43f7ff912ad5a9fa404bbbec2c48e6762c2d85d50de05378c8c3d802c"
+"checksum quicksilver 0.3.22 (registry+https://github.com/rust-lang/crates.io-index)" = "f7496c53e5d2c09e2eb55e133dc2a022ccd3958adab84ac07f1adab9d54c6a7f"
 "checksum quote 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)" = "7a6e920b65c65f10b2ae65c831a81a073a89edd28c7cce89475bff467ab4167a"
 "checksum quote 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)" = "6ce23b6b870e8f94f81fb0a363d65d86675884b34a09043c81e5562f11c1f8e1"
 "checksum quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "053a8c8bcc71fcce321828dc897a98ab9760bef03a4fc36693c231e5b3216cfe"
