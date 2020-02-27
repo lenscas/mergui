@@ -2,7 +2,11 @@ use crate::{
     widgets::{Widget, WidgetConfig},
     Assets,
 };
-use quicksilver::prelude::{Image, Img, Rectangle, Transform, Vector, Window};
+use quicksilver::geom::Rectangle;
+use quicksilver::graphics::Graphics;
+use quicksilver::graphics::Image;
+use quicksilver::mint::Vector2;
+//use quicksilver::prelude::{Image, Img, Rectangle, Transform, Vector, Window};
 
 ///Is used to render text to the screen
 pub struct Text {
@@ -17,13 +21,13 @@ impl WidgetConfig<(), Text> for Text {
 }
 
 impl Widget for Text {
-    fn contains(&self, _: &Vector) -> bool {
+    fn contains(&self, _: &Vector2<f32>) -> bool {
         false
     }
-    fn is_focusable(&self, _: &Vector) -> bool {
+    fn is_focusable(&self, _: &Vector2<f32>) -> bool {
         false
     }
-    fn render(&self, _: &dyn Assets, window: &mut Window, z: u32) {
-        window.draw_ex(&self.location, Img(&self.text), Transform::IDENTITY, z);
+    fn render(&self, _: &dyn Assets, gfx: &mut Graphics, z: u32) {
+        //window.draw_ex(&self.location, Img(&self.text), Transform::IDENTITY, z);
     }
 }
