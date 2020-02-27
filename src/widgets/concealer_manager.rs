@@ -1,7 +1,10 @@
 use super::{ConcealerConfig, Widget, WidgetConfig};
 use crate::{channels::ConcealerManagerReturn, widgets::concealer::Concealer, Assets};
-use quicksilver::prelude::{Vector, Window};
+use quicksilver::graphics::Graphics;
+use quicksilver::lifecycle::Window;
+use quicksilver::mint::Vector2;
 use std::sync::{Arc, Mutex};
+
 pub struct ConcealerManagerConfig<T: PartialEq, R: Sized, W: Widget, E: WidgetConfig<R, W>> {
     pub concealers: Vec<ConcealerConfig<T, R, W, E>>,
 }
@@ -35,46 +38,46 @@ impl<T: PartialEq, R: Sized, W: Widget, C: WidgetConfig<R, W>>
     }
 }
 impl<W: Widget> ConcealerManager<W> {
-    fn get_hovered_mut(&mut self, pos: &Vector) -> Option<&mut Concealer<W>> {
+    fn get_hovered_mut(&mut self, pos: &Vector2<f32>) -> Option<&mut Concealer<W>> {
         self.concealers.iter_mut().find(|v| v.contains(pos))
     }
-    fn get_hovered(&self, pos: &Vector) -> Option<&Concealer<W>> {
+    fn get_hovered(&self, pos: &Vector2<f32>) -> Option<&Concealer<W>> {
         self.concealers.iter().find(|v| v.contains(pos))
     }
 }
 impl<W: Widget> Widget for ConcealerManager<W> {
-    fn contains(&self, pos: &Vector) -> bool {
+    fn contains(&self, pos: &Vector2<f32>) -> bool {
         self.get_hovered(pos).map(|_| true).unwrap_or(false)
     }
-    fn is_focusable(&self, pos: &Vector) -> bool {
+    fn is_focusable(&self, pos: &Vector2<f32>) -> bool {
         self.get_hovered(pos)
             .map(|v| v.is_focusable(pos))
             .unwrap_or(false)
     }
-    fn render(&self, assets: &dyn Assets, window: &mut Window, z: u32) {
+    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics, z: u32) {
         self.concealers
             .iter()
             .enumerate()
-            .for_each(|(key, widget)| widget.render(assets, window, z + (key as u32)))
+            .for_each(|(key, widget)| widget.render(assets, gfx, z + (key as u32)))
     }
-    fn get_cursor_on_hover(&self, pos: &Vector) -> quicksilver::input::MouseCursor {
+    fn get_cursor_on_hover(&self, pos: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
         self.get_hovered(pos)
             .map(|v| v.get_cursor_on_hover(pos))
-            .unwrap_or_default()
+            .unwrap_or(quicksilver::lifecycle::CursorIcon::Default)
     }
-    fn set_focus(&mut self, pos: &Vector, state: bool) {
+    fn set_focus(&mut self, pos: &Vector2<f32>, state: bool) {
         match self.get_hovered_mut(pos) {
             Some(x) => x.set_focus(pos, state),
             None => {}
         }
     }
-    fn set_hover(&mut self, pos: &Vector, state: bool) {
+    fn set_hover(&mut self, pos: &Vector2<f32>, state: bool) {
         match self.get_hovered_mut(pos) {
             Some(x) => x.set_hover(pos, state),
             None => {}
         }
     }
-    fn on_click(&mut self, pos: &Vector) {
+    fn on_click(&mut self, pos: &Vector2<f32>) {
         let on_button = self
             .concealers
             .iter_mut()
@@ -90,7 +93,6 @@ impl<W: Widget> Widget for ConcealerManager<W> {
                 let (key, widget) = button;
                 widget.on_click(pos);
                 widget.set_concealing(false);
-                drop(widget);
                 if let Some(cur_widget) = self.concealers.get_mut(*cur) {
                     cur_widget.set_concealing(true)
                 }
@@ -117,11 +119,4 @@ impl<W: Widget> Widget for ConcealerManager<W> {
             (Some(_), Some(_)) => unreachable!("How....."),
         }
     }
-    fn on_key_press(
-        &mut self,
-        _key: quicksilver::input::Key,
-        _state: quicksilver::input::ButtonState,
-    ) {
-    }
-    fn on_typed(&mut self, _char: char) {}
 }

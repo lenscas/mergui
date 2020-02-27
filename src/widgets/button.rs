@@ -7,7 +7,11 @@ use crate::{
     },
     Assets,
 };
-use quicksilver::prelude::{Color, Image, Rectangle, Vector, Window};
+use quicksilver::geom::Rectangle;
+use quicksilver::graphics::Color;
+use quicksilver::graphics::Graphics;
+use quicksilver::graphics::Image;
+use quicksilver::mint::Vector2;
 
 pub struct ButtonConfig {
     ///The text that will be rendered
@@ -58,25 +62,25 @@ impl WidgetConfig<Clickable, Button> for ButtonConfig {
 }
 
 impl Widget for Button {
-    fn contains(&self, point: &Vector) -> bool {
+    fn contains(&self, point: &Vector2<f32>) -> bool {
         let contains = self.background.contains(point) || self.text.contains(point);
 
         contains
     }
-    fn is_focusable(&self, _: &Vector) -> bool {
+    fn is_focusable(&self, _: &Vector2<f32>) -> bool {
         false
     }
-    fn set_hover(&mut self, _: &Vector, hover: bool) {
+    fn set_hover(&mut self, _: &Vector2<f32>, hover: bool) {
         self.background.is_hovering = hover;
     }
-    fn render(&self, assets: &dyn Assets, window: &mut Window, z: u32) {
-        self.background.render(assets, window, z);
-        self.text.render(assets, window, z + 1);
+    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics, z: u32) {
+        self.background.render(assets, gfx, z);
+        self.text.render(assets, gfx, z + 1);
     }
-    fn on_click(&mut self, _: &Vector) {
+    fn on_click(&mut self, _: &Vector2<f32>) {
         self.channel.clicked();
     }
-    fn get_cursor_on_hover(&self, _: &Vector) -> quicksilver::input::MouseCursor {
-        quicksilver::input::MouseCursor::Hand
+    fn get_cursor_on_hover(&self, _: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
+        quicksilver::lifecycle::CursorIcon::Hand
     }
 }

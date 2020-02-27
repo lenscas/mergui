@@ -3,8 +3,12 @@ use crate::{
     widgets::{Widget, WidgetConfig},
     Assets,
 };
+use quicksilver::geom::Rectangle;
+use quicksilver::graphics::Color;
+use quicksilver::graphics::Graphics;
+use quicksilver::mint::Vector2;
 
-use quicksilver::prelude::{Blended, Color, Img, Rectangle, Transform, Vector, Window};
+//use quicksilver::prelude::{Blended, Color, Img, Rectangle, Transform, Vector, Window};
 
 ///Similar to the Image widget, except it notifies back when the user clicked on it.
 pub struct ImageButtonConfig {
@@ -35,28 +39,29 @@ impl WidgetConfig<Clickable, ImageButton> for ImageButtonConfig {
 }
 
 impl Widget for ImageButton {
-    fn contains(&self, point: &Vector) -> bool {
+    fn contains(&self, point: &Vector2<f32>) -> bool {
         point.x >= self.button.location.pos.x
             && point.y >= self.button.location.pos.y
             && point.x <= self.button.location.pos.x + self.button.location.size.x
             && point.y <= self.button.location.pos.y + self.button.location.size.y
     }
-    fn is_focusable(&self, _: &Vector) -> bool {
+    fn is_focusable(&self, _: &Vector2<f32>) -> bool {
         false
     }
-    fn render(&self, assets: &dyn Assets, window: &mut Window, z: u32) {
+    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics, z: u32) {
+        /*
         let image = assets.get_image(&self.button.image);
         let res = match (self.button.color, self.button.hover_color, self.is_hovering) {
             (Some(color), _, false) | (Some(color), None, true) => Blended(image, color),
             (_, Some(color2), true) => Blended(image, color2),
             (None, None, _) | (None, Some(_), false) => Img(image),
         };
-        window.draw_ex(&self.button.location, res, Transform::IDENTITY, z);
+        window.draw_ex(&self.button.location, res, Transform::IDENTITY, z);*/
     }
-    fn on_click(&mut self, _location: &Vector) {
+    fn on_click(&mut self, _location: &Vector2<f32>) {
         self.channel.clicked();
     }
-    fn get_cursor_on_hover(&self, _: &Vector) -> quicksilver::input::MouseCursor {
-        quicksilver::input::MouseCursor::Hand
+    fn get_cursor_on_hover(&self, _: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
+        quicksilver::lifecycle::CursorIcon::Hand
     }
 }

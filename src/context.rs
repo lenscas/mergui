@@ -4,7 +4,9 @@ use crate::{
     WidgetChannelReceiver, WidgetChannelSender, WidgetId, WidgetNummerId,
 };
 use indexmap::IndexMap;
-use quicksilver::{geom::Vector, graphics::Image, input::MouseCursor, lifecycle::Window};
+use quicksilver::graphics::Graphics;
+use quicksilver::mint::Vector2;
+use quicksilver::{graphics::Image, lifecycle::Window};
 use std::sync::mpsc;
 
 struct Layer<'a> {
@@ -47,7 +49,7 @@ pub struct Context<'a> {
     to_display: IndexMap<LayerNummerId, Layer<'a>>,
     widget_with_focus: Option<(u64, u64)>,
     last_layer_id: u64,
-    mouse_cursor: Vector,
+    mouse_cursor: Vector2<f32>,
     layer_channel: LayerChannelReceiver,
     layer_channel_creator: LayerChannelSender,
     widget_channel: WidgetChannelReceiver,
@@ -60,7 +62,7 @@ impl<'a> Context<'a> {
     ///To get arround this, the context will draw every widget with its own Z value.
     ///
     ///It draws the first widget with start_z and increases it by one for every widget, resseting this back to start_z every frame
-    pub fn new(cursor: Vector, start_z: u32) -> Self {
+    pub fn new(cursor: Vector2<f32>, start_z: u32) -> Self {
         let (layer_send, layer_rec) = mpsc::channel();
         let (widget_send, widget_rec) = mpsc::channel();
         Self {
@@ -153,15 +155,13 @@ impl<'a> Context<'a> {
         }
     }
     ///Call this in the event function of the state to update every widget.
-    pub fn event(&mut self, event: &quicksilver::lifecycle::Event, window: &mut Window) {
+    pub fn event(&mut self, event: &quicksilver::lifecycle::Event, window: &Window) {
         self.handle_extern_events();
-
-        use quicksilver::input::ButtonState;
-        use quicksilver::input::MouseButton;
         use quicksilver::lifecycle::Event::*;
         match event {
-            MouseMoved(val) => {
+            PointerMoved(val) => {
                 let cursor_location = &self.mouse_cursor;
+                let val = val.location();
                 let mut widgets = Context::get_widgets_mut(&mut self.to_display);
                 let mut widgets = widgets
                     .iter_mut()
@@ -175,22 +175,21 @@ impl<'a> Context<'a> {
                         }
                     })
                     .collect::<Vec<_>>();
-
                 let cursor = widgets
                     .pop()
                     .map(|widget| {
                         widget.set_hover(cursor_location, true);
                         widget.get_cursor_on_hover(cursor_location)
                     })
-                    .unwrap_or(MouseCursor::Default);
+                    .unwrap_or(quicksilver::lifecycle::CursorIcon::Default);
                 widgets
                     .iter_mut()
                     .for_each(|v| v.set_hover(cursor_location, false));
 
-                window.set_cursor(cursor);
-                self.mouse_cursor = *val;
+                window.set_cursor_icon(Some(cursor));
+                self.mouse_cursor = val;
             }
-            MouseButton(MouseButton::Left, ButtonState::Pressed) => {
+            PointerInput(input) => {
                 let cursor = &self.mouse_cursor;
                 let mut widgets = Context::get_widgets_mut(&mut self.to_display);
                 let mut maybe_focused_widgets: Vec<_> = widgets
@@ -225,26 +224,26 @@ impl<'a> Context<'a> {
                         }
                     });
             }
-            MouseButton(_, _) => {
-                //we don't handle other mouse buttons/states (yet)
-            }
-            Key(key, state) => {
+            KeyboardInput(event) => {
+                let key = event.key();
+                let is_down = event.is_down();
                 self.get_focused_widget()
-                    .map(|focused| focused.on_key_press(*key, *state));
+                    .map(|focused| focused.on_key_press(key, is_down));
             }
-            Typed(typed) => {
-                self.get_focused_widget().map(|v| v.on_typed(*typed));
+            ReceivedCharacter(typed) => {
+                self.get_focused_widget()
+                    .map(|v| v.on_typed(typed.character()));
             }
             _ => {}
         }
     }
     ///Call this in the render function of your state to render every widget
-    pub fn render<Store: Assets>(&mut self, assets: &Store, window: &mut Window) {
+    pub fn render<Store: Assets>(&mut self, assets: &Store, gfx: &mut Graphics) {
         self.handle_extern_events();
         let mut z = self.start_z;
         let widgets = Context::get_widgets(&self.to_display);
         widgets.iter().for_each(|(_, widget)| {
-            widget.render(assets, window, z);
+            widget.render(assets, gfx, z);
             z += 1;
         });
     }

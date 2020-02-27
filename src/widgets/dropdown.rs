@@ -1,8 +1,17 @@
 use super::{Widget, WidgetConfig};
 use crate::{channels::Dropdown as Channel, force_mutex, Assets};
-use quicksilver::prelude::{
-    Background::Col, Color, Image, Img, Line, Rectangle, Shape, Transform, Vector, Window,
-};
+use quicksilver::geom::Rectangle;
+use quicksilver::geom::Shape;
+use quicksilver::geom::Vector;
+use quicksilver::graphics::Color;
+use quicksilver::graphics::Graphics;
+use quicksilver::graphics::Image;
+use quicksilver::lifecycle::Window;
+use quicksilver::mint::Vector2;
+
+/*use quicksilver::prelude::{
+    Background::Col, Color, Image, Img, Line, Rectangle, Shape, Transform, Vector2<f32>, Window,
+};*/
 use std::{
     marker::PhantomData,
     sync::{Arc, Mutex, MutexGuard},
@@ -46,7 +55,7 @@ pub struct DropDownConfig<T: Clone, ValueConfig: Into<DropDownValueConfig<T>>> {
     ///The image that is used to show an extra button the user can click on to open it
     pub open_button: String,
     ///The size of the button. The button itself is always left to the widget
-    pub open_button_size: Vector,
+    pub open_button_size: Vector2<f32>,
     ///What starts as selected
     pub selected: Option<usize>,
     ///The color of the line between and arround every option
@@ -63,8 +72,8 @@ pub struct DropDown<T: Clone> {
     pub is_open: Arc<Mutex<bool>>,
     pub selected: Arc<Mutex<Option<usize>>>,
     pub open_button: String,
-    pub open_button_size: Vector,
-    pub hover_over: Option<Vector>,
+    pub open_button_size: Vector2<f32>,
+    pub hover_over: Option<Vector2<f32>>,
     pub divider_color: Color,
     pub divider_size: f32,
 }
@@ -102,29 +111,30 @@ impl<T: Clone, X: Into<DropDownValueConfig<T>>> WidgetConfig<Channel<T>, DropDow
 }
 
 impl<T: Clone> Widget for DropDown<T> {
-    fn contains(&self, point: &Vector) -> bool {
+    fn contains(&self, point: &Vector2<f32>) -> bool {
         self.location.contains(*point)
             || (self.is_open() && self.get_open_rec().contains(*point))
             || self.get_location_open_button().contains(*point)
     }
-    fn is_focusable(&self, _: &Vector) -> bool {
+    fn is_focusable(&self, _: &Vector2<f32>) -> bool {
         true
     }
-    fn set_hover(&mut self, point: &Vector, state: bool) {
+    fn set_hover(&mut self, point: &Vector2<f32>, state: bool) {
         if state {
             self.hover_over = Some(point.clone());
         } else {
             self.hover_over = None;
         }
     }
-    fn render(&self, assets: &dyn Assets, window: &mut Window, z: u32) {
+    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics, z: u32) {
+        /*
         window.draw_ex(
             &self.get_location_open_button(),
             Img(assets.get_image(&self.open_button)),
             Transform::IDENTITY,
             z,
-        );
-        self.draw_arround_rec(&self.location, window, z);
+        );*/
+        self.draw_arround_rec(&self.location, gfx, z);
         let values = self.values();
         let selected = self
             .selected()
@@ -132,12 +142,13 @@ impl<T: Clone> Widget for DropDown<T> {
             .or_else(|| values.get(0));
 
         if let Some(selected) = selected {
+            /*
             window.draw_ex(
                 &self.location,
                 Img(&selected.normal),
                 Transform::IDENTITY,
                 z + 1,
-            );
+            );*/
         }
         drop(values);
         let hovered = self.hover_over.and_then(|v| self.vector_to_index(&v));
@@ -163,22 +174,22 @@ impl<T: Clone> Widget for DropDown<T> {
                     (img, loc)
                 })
                 .for_each(|(img, location)| {
-                    window.draw_ex(&location, Img(img), Transform::IDENTITY, z + 1);
-                    self.draw_arround_rec(&location, window, z + 1);
+                    //window.draw_ex(&location, Img(img), Transform::IDENTITY, z + 1);
+                    self.draw_arround_rec(&location, gfx, z + 1);
                 })
         }
     }
-    fn on_click(&mut self, pos: &Vector) {
+    fn on_click(&mut self, pos: &Vector2<f32>) {
         if let Some(selected) = self.vector_to_index(&pos) {
             *force_mutex(&self.selected) = Some(selected);
         }
         let mut open = force_mutex(&self.is_open);
         *open = !*open;
     }
-    fn get_cursor_on_hover(&self, _: &Vector) -> quicksilver::input::MouseCursor {
-        quicksilver::input::MouseCursor::Hand
+    fn get_cursor_on_hover(&self, _: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
+        quicksilver::lifecycle::CursorIcon::Hand
     }
-    fn set_focus(&mut self, _: &Vector, focus: bool) {
+    fn set_focus(&mut self, _: &Vector2<f32>, focus: bool) {
         if focus == false {
             *force_mutex(&self.is_open) = focus;
         }
@@ -187,7 +198,7 @@ impl<T: Clone> Widget for DropDown<T> {
 impl<T: Clone> DropDown<T> {
     pub fn get_location_open_button(&self) -> Rectangle {
         let mut open_button_location = self.location.clone();
-        open_button_location.size = self.open_button_size.clone();
+        open_button_location.size = Vector::new(self.open_button_size.x, self.open_button_size.y);
         open_button_location.pos.x = self.location.pos.x + self.location.width();
         open_button_location
     }
@@ -205,7 +216,7 @@ impl<T: Clone> DropDown<T> {
     pub fn selected(&self) -> Option<usize> {
         *force_mutex(&self.selected)
     }
-    pub fn vector_to_index(&self, point: &Vector) -> Option<usize> {
+    pub fn vector_to_index(&self, point: &Vector2<f32>) -> Option<usize> {
         if !self.is_open() {
             return None;
         }
@@ -221,7 +232,7 @@ impl<T: Clone> DropDown<T> {
             None
         }
     }
-    fn draw_arround_rec(&self, rec: &Rectangle, window: &mut Window, z: u32) {
+    fn draw_arround_rec(&self, rec: &Rectangle, gfx: &mut Graphics, z: u32) {
         let corners = vec![
             rec.pos,
             {
@@ -252,12 +263,13 @@ impl<T: Clone> DropDown<T> {
             ));
         }
         combined.into_iter().for_each(|(start, end)| {
+            /*
             window.draw_ex(
                 &Line::new(start, end).with_thickness(self.divider_size),
                 Col(self.divider_color),
                 Transform::IDENTITY,
                 z + 1,
-            )
+            )*/
         });
     }
 }
