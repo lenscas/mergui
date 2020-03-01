@@ -1,7 +1,6 @@
 use super::{button::Button, ButtonConfig, Widget, WidgetConfig};
 use crate::{channels::concealer::ConcealerReturn, Assets};
 use quicksilver::graphics::Graphics;
-use quicksilver::lifecycle::Window;
 use quicksilver::mint::Vector2;
 //use quicksilver::prelude::{Vector2<f32>, Window};
 use std::{
@@ -82,13 +81,13 @@ impl<W: Widget> Widget for Concealer<W> {
                 .map(|v| v.set_hover(location, hover));
         }
     }
-    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics, z: u32) {
-        self.button.render(assets, gfx, z);
+    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics) {
+        self.button.render(assets, gfx);
         if !self.is_concealing() {
             self.hidden_widgets
                 .iter()
                 .enumerate()
-                .for_each(|(key, widget)| widget.render(assets, gfx, z + (key as u32)))
+                .for_each(|(_, widget)| widget.render(assets, gfx))
         }
     }
     fn on_click(&mut self, clicked_on: &Vector2<f32>) {

@@ -6,7 +6,6 @@ use quicksilver::geom::Vector;
 use quicksilver::graphics::Color;
 use quicksilver::graphics::Graphics;
 use quicksilver::graphics::Image;
-use quicksilver::lifecycle::Window;
 use quicksilver::mint::Vector2;
 
 /*use quicksilver::prelude::{
@@ -126,15 +125,12 @@ impl<T: Clone> Widget for DropDown<T> {
             self.hover_over = None;
         }
     }
-    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics, z: u32) {
-        /*
-        window.draw_ex(
-            &self.get_location_open_button(),
-            Img(assets.get_image(&self.open_button)),
-            Transform::IDENTITY,
-            z,
-        );*/
-        self.draw_arround_rec(&self.location, gfx, z);
+    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics) {
+        gfx.draw_image(
+            assets.get_image(&self.open_button),
+            self.get_location_open_button(),
+        );
+        self.draw_arround_rec(&self.location, gfx);
         let values = self.values();
         let selected = self
             .selected()
@@ -142,13 +138,7 @@ impl<T: Clone> Widget for DropDown<T> {
             .or_else(|| values.get(0));
 
         if let Some(selected) = selected {
-            /*
-            window.draw_ex(
-                &self.location,
-                Img(&selected.normal),
-                Transform::IDENTITY,
-                z + 1,
-            );*/
+            gfx.draw_image(&selected.normal, self.location);
         }
         drop(values);
         let hovered = self.hover_over.and_then(|v| self.vector_to_index(&v));
@@ -174,8 +164,9 @@ impl<T: Clone> Widget for DropDown<T> {
                     (img, loc)
                 })
                 .for_each(|(img, location)| {
+                    gfx.draw_image(img, location);
                     //window.draw_ex(&location, Img(img), Transform::IDENTITY, z + 1);
-                    self.draw_arround_rec(&location, gfx, z + 1);
+                    self.draw_arround_rec(&location, gfx);
                 })
         }
     }
@@ -232,44 +223,7 @@ impl<T: Clone> DropDown<T> {
             None
         }
     }
-    fn draw_arround_rec(&self, rec: &Rectangle, gfx: &mut Graphics, z: u32) {
-        let corners = vec![
-            rec.pos,
-            {
-                let mut v = rec.pos;
-                v.y += rec.height();
-                v
-            },
-            {
-                let mut v = rec.pos;
-                v.y += rec.height();
-                v.x += rec.width();
-                v
-            },
-            {
-                let mut v = rec.pos;
-                v.x += rec.width();
-                v
-            },
-        ];
-        let mut combined: Vec<(Vector, Vector)> = Vec::new();
-        for (index, value) in corners.iter().enumerate() {
-            combined.push((
-                value.clone(),
-                corners
-                    .get(index + 1)
-                    .cloned()
-                    .unwrap_or_else(|| corners[0]),
-            ));
-        }
-        combined.into_iter().for_each(|(start, end)| {
-            /*
-            window.draw_ex(
-                &Line::new(start, end).with_thickness(self.divider_size),
-                Col(self.divider_color),
-                Transform::IDENTITY,
-                z + 1,
-            )*/
-        });
+    fn draw_arround_rec(&self, rec: &Rectangle, gfx: &mut Graphics) {
+        gfx.stroke_rect(rec, self.divider_color);
     }
 }

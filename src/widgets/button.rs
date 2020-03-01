@@ -73,9 +73,9 @@ impl Widget for Button {
     fn set_hover(&mut self, _: &Vector2<f32>, hover: bool) {
         self.background.is_hovering = hover;
     }
-    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics, z: u32) {
-        self.background.render(assets, gfx, z);
-        self.text.render(assets, gfx, z + 1);
+    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics) {
+        self.background.render(assets, gfx);
+        self.text.render(assets, gfx);
     }
     fn on_click(&mut self, _: &Vector2<f32>) {
         self.channel.clicked();

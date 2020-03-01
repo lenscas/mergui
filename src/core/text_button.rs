@@ -43,14 +43,8 @@ impl Widget for TextButton {
     fn is_focusable(&self, _: &Vector2<f32>) -> bool {
         false
     }
-    fn render(&self, _: &dyn Assets, gfx: &mut Graphics, z: u32) {
-        /*
-        window.draw_ex(
-            &self.button.location,
-            Img(&self.button.text),
-            Transform::IDENTITY,
-            z,
-        );*/
+    fn render(&self, _: &dyn Assets, gfx: &mut Graphics) {
+        gfx.draw_image(&self.button.text, self.button.location)
     }
     fn on_click(&mut self, _location: &Vector2<f32>) {
         self.channel.clicked();

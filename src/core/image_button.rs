@@ -48,15 +48,16 @@ impl Widget for ImageButton {
     fn is_focusable(&self, _: &Vector2<f32>) -> bool {
         false
     }
-    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics, z: u32) {
-        /*
+    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics) {
         let image = assets.get_image(&self.button.image);
-        let res = match (self.button.color, self.button.hover_color, self.is_hovering) {
-            (Some(color), _, false) | (Some(color), None, true) => Blended(image, color),
-            (_, Some(color2), true) => Blended(image, color2),
-            (None, None, _) | (None, Some(_), false) => Img(image),
+        match (self.button.color, self.button.hover_color, self.is_hovering) {
+            (Some(color), _, false) | (Some(color), None, true) => {
+                gfx.draw_image_tinted(image, self.button.location, color)
+            }
+            (_, Some(color2), true) => gfx.draw_image_tinted(image, self.button.location, color2),
+            (None, None, _) | (None, Some(_), false) => gfx.draw_image(image, self.button.location),
         };
-        window.draw_ex(&self.button.location, res, Transform::IDENTITY, z);*/
+        //window.draw_ex(&self.button.location, res, Transform::IDENTITY, z);*/
     }
     fn on_click(&mut self, _location: &Vector2<f32>) {
         self.channel.clicked();
