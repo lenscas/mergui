@@ -11,7 +11,7 @@ pub trait WidgetConfig<R: Sized, W: Widget> {
 pub trait Widget {
     fn contains(&self, pos: &Vector2<f32>) -> bool;
     fn is_focusable(&self, pos: &Vector2<f32>) -> bool;
-    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics, z: u32);
+    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics);
     fn get_cursor_on_hover(&self, _: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
         quicksilver::lifecycle::CursorIcon::Default
     }

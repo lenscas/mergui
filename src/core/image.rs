@@ -25,9 +25,8 @@ impl Widget for Image {
     fn is_focusable(&self, _: &Vector2<f32>) -> bool {
         false
     }
-    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics, z: u32) {
-        /*
+    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics) {
         let image = assets.get_image(&self.image);
-        window.draw_ex(&self.location, Img(&image), Transform::IDENTITY, z);*/
+        gfx.draw_image(image, self.location);
     }
 }

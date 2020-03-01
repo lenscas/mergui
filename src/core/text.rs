@@ -27,7 +27,7 @@ impl Widget for Text {
     fn is_focusable(&self, _: &Vector2<f32>) -> bool {
         false
     }
-    fn render(&self, _: &dyn Assets, gfx: &mut Graphics, z: u32) {
-        //window.draw_ex(&self.location, Img(&self.text), Transform::IDENTITY, z);
+    fn render(&self, _: &dyn Assets, gfx: &mut Graphics) {
+        gfx.draw_image(&self.text, self.location)
     }
 }

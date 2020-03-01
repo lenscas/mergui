@@ -1,7 +1,6 @@
 use super::{ConcealerConfig, Widget, WidgetConfig};
 use crate::{channels::ConcealerManagerReturn, widgets::concealer::Concealer, Assets};
 use quicksilver::graphics::Graphics;
-use quicksilver::lifecycle::Window;
 use quicksilver::mint::Vector2;
 use std::sync::{Arc, Mutex};
 
@@ -54,11 +53,11 @@ impl<W: Widget> Widget for ConcealerManager<W> {
             .map(|v| v.is_focusable(pos))
             .unwrap_or(false)
     }
-    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics, z: u32) {
+    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics) {
         self.concealers
             .iter()
             .enumerate()
-            .for_each(|(key, widget)| widget.render(assets, gfx, z + (key as u32)))
+            .for_each(|(_, widget)| widget.render(assets, gfx))
     }
     fn get_cursor_on_hover(&self, pos: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
         self.get_hovered(pos)

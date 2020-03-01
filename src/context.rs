@@ -243,7 +243,7 @@ impl<'a> Context<'a> {
         let mut z = self.start_z;
         let widgets = Context::get_widgets(&self.to_display);
         widgets.iter().for_each(|(_, widget)| {
-            widget.render(assets, gfx, z);
+            widget.render(assets, gfx);
             z += 1;
         });
     }
