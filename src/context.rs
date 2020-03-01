@@ -5,6 +5,7 @@ use crate::{
 };
 use indexmap::IndexMap;
 use quicksilver::graphics::Graphics;
+use quicksilver::lifecycle::MouseButton;
 use quicksilver::mint::Vector2;
 use quicksilver::{graphics::Image, lifecycle::Window};
 use std::sync::mpsc;
@@ -54,6 +55,7 @@ pub struct Context<'a> {
     layer_channel_creator: LayerChannelSender,
     widget_channel: WidgetChannelReceiver,
     widget_channel_creator: WidgetChannelSender,
+    left_mouse_button_down: bool,
 }
 
 impl<'a> Context<'a> {
@@ -75,6 +77,7 @@ impl<'a> Context<'a> {
             layer_channel_creator: layer_send,
             widget_channel: widget_rec,
             widget_channel_creator: widget_send,
+            left_mouse_button_down: false,
         }
     }
     ///Adds a layer that can hold multiple widgets.
@@ -190,6 +193,25 @@ impl<'a> Context<'a> {
                 self.mouse_cursor = val;
             }
             PointerInput(input) => {
+                if input.button() != MouseButton::Left {
+                    return;
+                }
+                match (input.is_down(), self.left_mouse_button_down) {
+                    //it was already down, do not register as click
+                    (true, true) => return,
+                    //the button was released, we only have to mark it as such
+                    (false, true) => {
+                        self.left_mouse_button_down = false;
+                        return;
+                    }
+                    //first time the button got pressed, mark it as such and continue prosessing the event
+                    (true, false) => {
+                        self.left_mouse_button_down = true;
+                    }
+                    //the button is released while never being pressed.
+                    //this shouldn't happen
+                    (false, false) => unreachable!(),
+                }
                 let cursor = &self.mouse_cursor;
                 let mut widgets = Context::get_widgets_mut(&mut self.to_display);
                 let mut maybe_focused_widgets: Vec<_> = widgets
