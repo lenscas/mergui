@@ -1,5 +1,5 @@
 use super::{Widget, WidgetConfig};
-use crate::{channels::Dropdown as Channel, force_mutex, Assets};
+use crate::{channels::Dropdown as Channel, force_mutex};
 use quicksilver::geom::Rectangle;
 use quicksilver::geom::Shape;
 use quicksilver::geom::Vector;
@@ -52,7 +52,7 @@ pub struct DropDownConfig<T: Clone, ValueConfig: Into<DropDownValueConfig<T>>> {
     ///The height of every option inside the list
     pub option_height: f32,
     ///The image that is used to show an extra button the user can click on to open it
-    pub open_button: String,
+    pub open_button: Image,
     ///The size of the button. The button itself is always left to the widget
     pub open_button_size: Vector2<f32>,
     ///What starts as selected
@@ -70,7 +70,7 @@ pub struct DropDown<T: Clone> {
     pub values: Arc<Mutex<Vec<DropDownValueConfig<T>>>>,
     pub is_open: Arc<Mutex<bool>>,
     pub selected: Arc<Mutex<Option<usize>>>,
-    pub open_button: String,
+    pub open_button: Image,
     pub open_button_size: Vector2<f32>,
     pub hover_over: Option<Vector2<f32>>,
     pub divider_color: Color,
@@ -125,11 +125,8 @@ impl<T: Clone> Widget for DropDown<T> {
             self.hover_over = None;
         }
     }
-    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics) {
-        gfx.draw_image(
-            assets.get_image(&self.open_button),
-            self.get_location_open_button(),
-        );
+    fn render(&mut self, gfx: &mut Graphics) {
+        gfx.draw_image(&self.open_button, self.get_location_open_button());
         self.draw_arround_rec(&self.location, gfx);
         let values = self.values();
         let selected = self
