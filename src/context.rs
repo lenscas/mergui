@@ -6,8 +6,8 @@ use crate::{
 use indexmap::IndexMap;
 use quicksilver::graphics::Graphics;
 use quicksilver::lifecycle::MouseButton;
+use quicksilver::lifecycle::Window;
 use quicksilver::mint::Vector2;
-use quicksilver::{graphics::Image, lifecycle::Window};
 use std::sync::mpsc;
 
 struct Layer<'a> {
@@ -40,13 +40,13 @@ impl<'a> Layer<'a> {
         self.current_id
     }
 }
+/*
 ///Used by widgets to get the image they need to render.
 pub trait Assets {
     fn get_image(&self, name: &str) -> &Image;
-}
+}*/
 ///This manages the GUI. It contains every widget that needs to be drawn and makes sure they are updated properly
 pub struct Context<'a> {
-    start_z: u32,
     to_display: IndexMap<LayerNummerId, Layer<'a>>,
     widget_with_focus: Option<(u64, u64)>,
     last_layer_id: u64,
@@ -59,12 +59,7 @@ pub struct Context<'a> {
 }
 
 impl<'a> Context<'a> {
-    ///Due to bug [434](https://github.com/ryanisaacg/quicksilver/issues/434) in quicksilver, the draw order of draw calls without a "z" value is unspecified
-    ///
-    ///To get arround this, the context will draw every widget with its own Z value.
-    ///
-    ///It draws the first widget with start_z and increases it by one for every widget, resseting this back to start_z every frame
-    pub fn new(cursor: Vector2<f32>, start_z: u32) -> Self {
+    pub fn new(cursor: Vector2<f32>) -> Self {
         let (layer_send, layer_rec) = mpsc::channel();
         let (widget_send, widget_rec) = mpsc::channel();
         Self {
@@ -72,7 +67,6 @@ impl<'a> Context<'a> {
             widget_with_focus: None,
             last_layer_id: 0,
             mouse_cursor: cursor,
-            start_z,
             layer_channel: layer_rec,
             layer_channel_creator: layer_send,
             widget_channel: widget_rec,
@@ -260,13 +254,11 @@ impl<'a> Context<'a> {
         }
     }
     ///Call this in the render function of your state to render every widget
-    pub fn render<Store: Assets>(&mut self, assets: &Store, gfx: &mut Graphics) {
+    pub fn render(&mut self, gfx: &mut Graphics) {
         self.handle_extern_events();
-        let mut z = self.start_z;
-        let widgets = Context::get_widgets(&self.to_display);
-        widgets.iter().for_each(|(_, widget)| {
-            widget.render(assets, gfx);
-            z += 1;
+        let mut widgets = Context::get_widgets_mut(&mut self.to_display);
+        widgets.iter_mut().for_each(|(_, widget)| {
+            widget.render(gfx);
         });
     }
     ///Adds a widget configuration to a given layer.

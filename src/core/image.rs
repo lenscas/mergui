@@ -1,7 +1,4 @@
-use crate::{
-    widgets::{Widget, WidgetConfig},
-    Assets,
-};
+use crate::widgets::{Widget, WidgetConfig};
 use quicksilver::geom::Rectangle;
 use quicksilver::graphics::Graphics;
 use quicksilver::mint::Vector2;
@@ -9,7 +6,7 @@ use quicksilver::mint::Vector2;
 ///A simple unfocusable, uninteractable image.
 pub struct Image {
     ///name of the image that needs to be rendered
-    pub image: String,
+    pub image: quicksilver::graphics::Image,
     ///location and size that will be used to render the image
     pub location: Rectangle,
 }
@@ -25,8 +22,7 @@ impl Widget for Image {
     fn is_focusable(&self, _: &Vector2<f32>) -> bool {
         false
     }
-    fn render(&self, assets: &dyn Assets, gfx: &mut Graphics) {
-        let image = assets.get_image(&self.image);
-        gfx.draw_image(image, self.location);
+    fn render(&mut self, gfx: &mut Graphics) {
+        gfx.draw_image(&self.image, self.location);
     }
 }
