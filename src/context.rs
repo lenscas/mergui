@@ -28,11 +28,11 @@ impl<'a> Layer<'a> {
             current_id: 0,
         }
     }
-    pub fn get_mut(&mut self, index: &u64) -> Option<&mut Box<dyn Widget + 'a>> {
-        self.widgets.get_mut(index)
+    pub fn get_mut(&mut self, index: u64) -> Option<&mut (dyn Widget + 'a)> {
+        self.widgets.get_mut(&index).map(|v| v.as_mut())
     }
-    pub fn remove(&mut self, index: &u64) {
-        self.widgets.remove(index);
+    pub fn remove(&mut self, index: u64) {
+        self.widgets.remove(&index);
     }
     pub fn insert(&mut self, widget: Box<dyn Widget + 'a>) -> u64 {
         self.current_id += 1;
@@ -84,9 +84,9 @@ impl<'a> Context<'a> {
         LayerId::new(self.last_layer_id, self.layer_channel_creator.clone())
     }
 
-    fn get_focused_widget(&mut self) -> Option<&mut Box<dyn Widget + 'a>> {
+    fn get_focused_widget(&mut self) -> Option<&mut (dyn Widget + 'a)> {
         self.widget_with_focus
-            .and_then(move |v| self.to_display.get_mut(&v.0).and_then(|x| x.get_mut(&v.1)))
+            .and_then(move |v| self.to_display.get_mut(&v.0).and_then(|x| x.get_mut(v.1)))
     }
     fn get_widgets<'b>(
         widgets: &'b IndexMap<u64, Layer<'a>>,
@@ -132,7 +132,9 @@ impl<'a> Context<'a> {
             let id = id.1;
             match event.1 {
                 WidgetInstruction::Drop => {
-                    self.to_display.get_mut(&layer).map(|v| v.remove(&id));
+                    if let Some(v) = self.to_display.get_mut(&layer) {
+                        v.remove(id)
+                    }
                 }
             }
         }
@@ -146,7 +148,9 @@ impl<'a> Context<'a> {
                     self.to_display.remove(&id);
                 }
                 LayerInstructions::SetIsActive(state) => {
-                    self.to_display.get_mut(&id).map(|v| v.is_active = state);
+                    if let Some(v) = self.to_display.get_mut(&id) {
+                        v.is_active = state
+                    }
                 }
             }
         }
@@ -243,12 +247,14 @@ impl<'a> Context<'a> {
             KeyboardInput(event) => {
                 let key = event.key();
                 let is_down = event.is_down();
-                self.get_focused_widget()
-                    .map(|focused| focused.on_key_press(key, is_down));
+                if let Some(focused) = self.get_focused_widget() {
+                    focused.on_key_press(key, is_down)
+                }
             }
             ReceivedCharacter(typed) => {
-                self.get_focused_widget()
-                    .map(|v| v.on_typed(typed.character()));
+                if let Some(v) = self.get_focused_widget() {
+                    v.on_typed(typed.character())
+                }
             }
             _ => {}
         }

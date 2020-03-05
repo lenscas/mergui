@@ -12,16 +12,15 @@ impl<T: PartialEq, R: Sized> ConcealerManagerReturn<T, R> {
     }
     pub fn set_active_concealed(&mut self, new_active: Option<usize>) {
         let locked = self.shown.lock();
-        match locked {
-            Ok(mut x) => *x = new_active,
-            Err(_) => {}
+        if let Ok(mut x) = locked {
+            *x = new_active
         }
     }
     pub fn get_current_active(&self) -> Option<usize> {
         let locked = self.shown.lock();
         match locked {
-            Ok(res) => res.clone(),
-            Err(x) => x.into_inner().clone(),
+            Ok(res) => *res,
+            Err(x) => *(x.into_inner()),
         }
     }
     pub fn iter<'a>(&'a self) -> Box<dyn Iterator<Item = &'a Vec<(T, R)>> + 'a> {

@@ -68,7 +68,7 @@ impl<W: Widget> Widget for Concealer<W> {
         if self.is_concealing() {
             false
         } else {
-            self.get_widget_at(location)
+            self.get_widget_at(*location)
                 .map(|w| w.is_focusable(location))
                 .unwrap_or(false)
         }
@@ -77,8 +77,9 @@ impl<W: Widget> Widget for Concealer<W> {
         if self.button.contains(location) {
             self.button.set_hover(location, hover);
         } else if !self.is_concealing() {
-            self.get_mut_widget_at(location)
-                .map(|v| v.set_hover(location, hover));
+            if let Some(v) = self.get_mut_widget_at(*location) {
+                v.set_hover(location, hover)
+            }
         }
     }
     fn render(&mut self, gfx: &mut Graphics) {
@@ -101,8 +102,9 @@ impl<W: Widget> Widget for Concealer<W> {
             );
             self.button.on_click(clicked_on);
         } else if !self.is_concealing() {
-            self.get_mut_widget_at(clicked_on)
-                .map(|widget| widget.on_click(clicked_on));
+            if let Some(widget) = self.get_mut_widget_at(*clicked_on) {
+                widget.on_click(clicked_on)
+            }
         }
     }
     fn get_cursor_on_hover(&self, pos: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
@@ -119,18 +121,18 @@ impl<W: Widget> Widget for Concealer<W> {
 }
 
 impl<W: Widget> Concealer<W> {
-    fn get_widget_at(&self, location: &Vector2<f32>) -> Option<&W> {
-        self.hidden_widgets.iter().find(|w| w.contains(location))
+    fn get_widget_at(&self, location: Vector2<f32>) -> Option<&W> {
+        self.hidden_widgets.iter().find(|w| w.contains(&location))
     }
-    fn get_mut_widget_at(&mut self, location: &Vector2<f32>) -> Option<&mut W> {
+    fn get_mut_widget_at(&mut self, location: Vector2<f32>) -> Option<&mut W> {
         self.hidden_widgets
             .iter_mut()
-            .find(|w| w.contains(location))
+            .find(|w| w.contains(&location))
     }
     fn is_concealing(&self) -> bool {
         match self.is_concealing.lock() {
-            Ok(x) => x.clone(),
-            Err(x) => x.into_inner().clone(),
+            Ok(x) => *x,
+            Err(x) => *(x.into_inner()),
         }
     }
     pub fn set_concealing(&mut self, state: bool) {
