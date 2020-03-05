@@ -13,9 +13,7 @@ pub struct BasicClickable {
 impl Clickable for BasicClickable {
     ///Returns true if the user clicked on the widget since the last time this function got called.
     fn has_clicked(&mut self) -> bool {
-        self.reader
-            .try_iter()
-            .fold(false, |cur, message| cur || message)
+        self.reader.try_iter().any(|message| message)
     }
 }
 impl BasicClickable {

@@ -25,16 +25,15 @@ pub struct ConcealerReturn<T: PartialEq, R: Sized> {
 impl<T: PartialEq, R: Sized> Concealer<T, R> for ConcealerReturn<T, R> {
     fn set_concealed(&mut self, new_consealed_state: bool) {
         let locked = self.is_concealing.lock();
-        match locked {
-            Ok(mut res) => *res = new_consealed_state,
-            Err(_) => {}
+        if let Ok(mut res) = locked {
+            *res = new_consealed_state
         }
     }
     fn is_concealing(&self) -> bool {
         let locked = self.is_concealing.lock();
         match locked {
-            Ok(res) => res.clone(),
-            Err(x) => x.into_inner().clone(),
+            Ok(res) => *(res),
+            Err(x) => *(x.into_inner()),
         }
     }
     fn get_item(&self, key: T) -> Option<&R> {

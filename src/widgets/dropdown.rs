@@ -120,7 +120,7 @@ impl<T: Clone> Widget for DropDown<T> {
     }
     fn set_hover(&mut self, point: &Vector2<f32>, state: bool) {
         if state {
-            self.hover_over = Some(point.clone());
+            self.hover_over = Some(*point);
         } else {
             self.hover_over = None;
         }
@@ -138,7 +138,7 @@ impl<T: Clone> Widget for DropDown<T> {
             gfx.draw_image(&selected.normal, self.location);
         }
         drop(values);
-        let hovered = self.hover_over.and_then(|v| self.vector_to_index(&v));
+        let hovered = self.hover_over.and_then(|v| self.vector_to_index(v));
 
         if self.is_open() {
             self.values()
@@ -156,8 +156,8 @@ impl<T: Clone> Widget for DropDown<T> {
                 })
                 .map(|(image, key)| (image, (key + 1) as f32))
                 .map(|(img, index)| {
-                    let mut loc = self.location.clone();
-                    loc.pos.y = loc.pos.y + (self.option_height * index);
+                    let mut loc = self.location;
+                    loc.pos.y += self.option_height * index;
                     (img, loc)
                 })
                 .for_each(|(img, location)| {
@@ -168,7 +168,7 @@ impl<T: Clone> Widget for DropDown<T> {
         }
     }
     fn on_click(&mut self, pos: &Vector2<f32>) {
-        if let Some(selected) = self.vector_to_index(&pos) {
+        if let Some(selected) = self.vector_to_index(*pos) {
             *force_mutex(&self.selected) = Some(selected);
         }
         let mut open = force_mutex(&self.is_open);
@@ -178,20 +178,20 @@ impl<T: Clone> Widget for DropDown<T> {
         quicksilver::lifecycle::CursorIcon::Hand
     }
     fn set_focus(&mut self, _: &Vector2<f32>, focus: bool) {
-        if focus == false {
+        if !focus {
             *force_mutex(&self.is_open) = focus;
         }
     }
 }
 impl<T: Clone> DropDown<T> {
     pub fn get_location_open_button(&self) -> Rectangle {
-        let mut open_button_location = self.location.clone();
+        let mut open_button_location = self.location;
         open_button_location.size = Vector::new(self.open_button_size.x, self.open_button_size.y);
         open_button_location.pos.x = self.location.pos.x + self.location.width();
         open_button_location
     }
     pub fn get_open_rec(&self) -> Rectangle {
-        let mut rec = self.location.clone();
+        let mut rec = self.location;
         rec.size.y = self.location.size.y + (self.option_height * self.values().len() as f32);
         rec
     }
@@ -204,11 +204,11 @@ impl<T: Clone> DropDown<T> {
     pub fn selected(&self) -> Option<usize> {
         *force_mutex(&self.selected)
     }
-    pub fn vector_to_index(&self, point: &Vector2<f32>) -> Option<usize> {
+    pub fn vector_to_index(&self, point: Vector2<f32>) -> Option<usize> {
         if !self.is_open() {
             return None;
         }
-        let mut offset = point.clone();
+        let mut offset = point;
         offset.y -= self.location.pos.y + self.location.height();
         let offset = offset;
         if offset.y > 0f32 {
