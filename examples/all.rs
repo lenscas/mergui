@@ -16,6 +16,7 @@ fn main() {
         Settings {
             size: Vector::new(800.0, 600.0).into(),
             title: "Image Example",
+            resizable: true,
             ..Settings::default()
         },
         app,
@@ -39,7 +40,6 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
     };
     let _t = context.add_widget(conf, &layer).unwrap();
     let button = Image::load(&gfx, "button.png").await?;
-    //*
     gfx.set_blend_mode(Some(BlendMode {
         equation: Default::default(),
         function: BlendFunction::Same {
