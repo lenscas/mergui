@@ -63,9 +63,7 @@ impl WidgetConfig<Clickable, Button> for ButtonConfig {
 
 impl Widget for Button {
     fn contains(&self, point: &Vector2<f32>) -> bool {
-        let contains = self.background.contains(point) || self.text.contains(point);
-        let contains = dbg!(contains);
-        contains
+        self.background.contains(point) || self.text.contains(point)
     }
     fn is_focusable(&self, _: &Vector2<f32>) -> bool {
         false
