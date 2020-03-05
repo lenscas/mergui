@@ -206,9 +206,9 @@ impl<'a> Context<'a> {
                     (true, false) => {
                         self.left_mouse_button_down = true;
                     }
-                    //the button is released while never being pressed.
-                    //this shouldn't happen
-                    (false, false) => unreachable!(),
+                    //the button is released while never being pressed. I would've marked it as unreacable, but apparently it can happen?
+                    //so.. instead lets do nothing....
+                    (false, false) => return,
                 }
                 let cursor = &self.mouse_cursor;
                 let mut widgets = Context::get_widgets_mut(&mut self.to_display);
