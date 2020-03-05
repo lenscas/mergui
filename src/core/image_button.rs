@@ -54,8 +54,6 @@ impl Widget for ImageButton {
                 gfx.draw_image_tinted(&self.button.image, self.button.location, color)
             }
             (_, Some(color2), true) => {
-                println!("It should be red?");
-                self.button.hover_color = dbg!(self.button.hover_color);
                 gfx.draw_image_tinted(&self.button.image, self.button.location, color2)
             }
             (None, None, _) | (None, Some(_), false) => {
