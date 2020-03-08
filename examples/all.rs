@@ -144,7 +144,10 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
     let _dropdown = context.add_widget(conf, &layer).unwrap();
 
     let config = InputConfig {
-        font: basic_font_style.clone(),
+        font: FontStyle {
+            size: 45.0,
+            ..basic_font_style.clone()
+        },
         placeholder: None, //Option<PlaceholderConfig>,
         location: Rectangle::new((100, 355), (160, 50)),
         start_value: None,

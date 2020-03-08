@@ -76,6 +76,9 @@ impl Widget for Input {
     }
 
     fn on_typed(&mut self, typed_char: char) {
+        if typed_char.is_control() {
+            return;
+        }
         let mut old = self.value.get();
         old.push(typed_char);
         self.value.set(old);
