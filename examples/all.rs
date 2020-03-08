@@ -1,4 +1,4 @@
-use mergui::widgets::ButtonConfig;
+use mergui::widgets::{ButtonConfig, ConcealerConfig, DropDownConfig};
 use quicksilver::graphics::blend::{
     BlendChannel, BlendFactor, BlendFunction, BlendInput, BlendMode,
 };
@@ -10,6 +10,7 @@ use quicksilver::{
 };
 
 use mergui::{core::Text, Context, FontStyle, MFont};
+use std::marker::PhantomData;
 
 fn main() {
     run(
@@ -28,15 +29,18 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
     let font = MFont::load_ttf(&gfx, "font.ttf").await?;
     let mut context = Context::new([0.0, 0.0].into());
     let layer = context.add_layer();
+
+    let basic_font_style = FontStyle {
+        font: font.clone(),
+        size: 15.0,
+        location: Vector::new(20, 20),
+        color: Color::BLACK,
+        max_width: None,
+    };
+
     let conf = Text {
         text: "Some awesome piece of text".into(),
-        font_style: FontStyle {
-            font: font.clone(),
-            size: 15.0,
-            location: Vector::new(20, 20),
-            color: Color::BLACK,
-            max_width: None,
-        },
+        font_style: basic_font_style.clone(),
     };
     let _t = context.add_widget(conf, &layer).unwrap();
     let button = Image::load(&gfx, "button.png").await?;
@@ -58,7 +62,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
     }));
 
     let conf = ButtonConfig {
-        background: button,
+        background: button.clone(),
         background_location: Rectangle::new((100, 50), (200, 100)),
         blend_color: Some(Color::GREEN),
         hover_color: Some(Color::RED),
@@ -72,6 +76,72 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         text: "Some text".into(),
     };
     let _button = context.add_widget(conf, &layer).unwrap();
+    let conf = ConcealerConfig {
+        button: ButtonConfig {
+            background: button.clone(),
+            background_location: Rectangle::new((100, 155), (200, 100)),
+            blend_color: Some(Color::GREEN),
+            hover_color: Some(Color::RED),
+            font_style: FontStyle {
+                font: font.clone(),
+                size: 20.0,
+                location: Vector::new(30, 55),
+                color: Color::BLUE,
+                max_width: None,
+            },
+            text: "Concealer".into(),
+        },
+        hidden_widgets: vec![(
+            0,
+            ButtonConfig {
+                background: button.clone(),
+                background_location: Rectangle::new((310, 155), (200, 100)),
+                blend_color: Some(Color::GREEN),
+                hover_color: Some(Color::RED),
+                font_style: FontStyle {
+                    font: font.clone(),
+                    size: 20.0,
+                    location: Vector::new(30, 55),
+                    color: Color::BLUE,
+                    max_width: None,
+                },
+                text: "Hidden".into(),
+            },
+        )],
+        to_widget: PhantomData,
+        to_result: PhantomData,
+    };
+    let _concealer = context.add_widget(conf, &layer).unwrap();
+
+    let conf = DropDownConfig {
+        values: vec![
+            (
+                "awesome",
+                FontStyle {
+                    size: 30.0,
+                    location: Vector::new(10, 55),
+                    ..basic_font_style.clone()
+                },
+            ),
+            (
+                "second",
+                FontStyle {
+                    size: 35.0,
+                    location: Vector::new(15, 55),
+                    ..basic_font_style.clone()
+                },
+            ),
+        ],
+        location: Rectangle::new((100, 300), (160, 50)),
+        option_height: 50.0,
+        open_button: button.clone(),
+        open_button_size: [100.0, 50.0].into(),
+        selected: Some(0),
+        divider_color: Color::BLACK,
+        divider_size: 5.0,
+        t: PhantomData,
+    };
+    let _dropdown = context.add_widget(conf, &layer).unwrap();
 
     gfx.clear(Color::WHITE);
     context.render(&mut gfx);
