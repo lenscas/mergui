@@ -1,4 +1,4 @@
-use mergui::widgets::{ButtonConfig, ConcealerConfig, DropDownConfig};
+use mergui::widgets::{input::InputConfig, ButtonConfig, ConcealerConfig, DropDownConfig};
 use quicksilver::graphics::blend::{
     BlendChannel, BlendFactor, BlendFunction, BlendInput, BlendMode,
 };
@@ -143,6 +143,13 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
     };
     let _dropdown = context.add_widget(conf, &layer).unwrap();
 
+    let config = InputConfig {
+        font: basic_font_style.clone(),
+        placeholder: None, //Option<PlaceholderConfig>,
+        location: Rectangle::new((100, 355), (160, 50)),
+        start_value: None,
+    };
+    let _text_input = context.add_widget(config, &layer).unwrap();
     gfx.clear(Color::WHITE);
     context.render(&mut gfx);
 

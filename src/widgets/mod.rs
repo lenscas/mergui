@@ -2,6 +2,7 @@ pub mod button;
 pub mod concealer;
 pub mod concealer_manager;
 pub mod dropdown;
+pub mod input;
 mod widget_traits;
 
 pub use button::ButtonConfig;
