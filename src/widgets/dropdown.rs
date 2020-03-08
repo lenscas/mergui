@@ -1,5 +1,5 @@
 use super::{Widget, WidgetConfig};
-use crate::{channels::Dropdown as Channel, force_mutex};
+use crate::{channels::Dropdown as Channel, force_mutex, FontStyle};
 use quicksilver::geom::Rectangle;
 use quicksilver::geom::Shape;
 use quicksilver::geom::Vector;
@@ -21,25 +21,50 @@ pub struct DropDownValueConfig<T: Clone> {
     ///The actual value that is being represented
     pub value: T,
     ///what is displayed in the list
-    pub normal: Image,
+    pub text: String,
+    pub normal_font_style: FontStyle,
     ///what is displayed if the user hovers over it
-    pub hover: Option<Image>,
+    pub hover_font_style: Option<FontStyle>,
 }
-impl<T: Clone> From<(T, Image)> for DropDownValueConfig<T> {
-    fn from(val: (T, Image)) -> DropDownValueConfig<T> {
+impl<T: Clone> From<(T, String, FontStyle)> for DropDownValueConfig<T> {
+    fn from(val: (T, String, FontStyle)) -> DropDownValueConfig<T> {
         Self {
             value: val.0,
-            normal: val.1,
-            hover: None,
+            text: val.1,
+            normal_font_style: val.2,
+            hover_font_style: None,
         }
     }
 }
-impl<T: Clone> From<(T, Image, Image)> for DropDownValueConfig<T> {
-    fn from(val: (T, Image, Image)) -> DropDownValueConfig<T> {
+impl<T: Clone> From<(T, String, FontStyle, FontStyle)> for DropDownValueConfig<T> {
+    fn from(val: (T, String, FontStyle, FontStyle)) -> DropDownValueConfig<T> {
         Self {
             value: val.0,
-            normal: val.1,
-            hover: Some(val.2),
+            text: val.1,
+            normal_font_style: val.2,
+            hover_font_style: Some(val.3),
+        }
+    }
+}
+impl<T: Clone + ToString> From<(T, FontStyle, FontStyle)> for DropDownValueConfig<T> {
+    fn from(val: (T, FontStyle, FontStyle)) -> DropDownValueConfig<T> {
+        let as_text = val.0.to_string();
+        Self {
+            value: val.0,
+            text: as_text,
+            normal_font_style: val.1,
+            hover_font_style: Some(val.2),
+        }
+    }
+}
+impl<T: Clone + ToString> From<(T, FontStyle)> for DropDownValueConfig<T> {
+    fn from(val: (T, FontStyle)) -> DropDownValueConfig<T> {
+        let as_text = val.0.to_string();
+        Self {
+            value: val.0,
+            text: as_text,
+            normal_font_style: val.1,
+            hover_font_style: None,
         }
     }
 }
@@ -135,35 +160,63 @@ impl<T: Clone> Widget for DropDown<T> {
             .or_else(|| values.get(0));
 
         if let Some(selected) = selected {
-            gfx.draw_image(&selected.normal, self.location);
+            let mut font = selected.normal_font_style.font.0.borrow_mut();
+            let mut pos = self.location.pos;
+            pos.y += selected.normal_font_style.size;
+            gfx.draw_text(
+                &mut font,
+                &selected.text,
+                selected.normal_font_style.size,
+                selected.normal_font_style.max_width,
+                selected.normal_font_style.color,
+                pos,
+            );
         }
         drop(values);
         let hovered = self.hover_over.and_then(|v| self.vector_to_index(v));
 
         if self.is_open() {
             self.values()
-                .iter()
+                .iter_mut()
                 .enumerate()
                 .map(|(key, value)| match hovered {
                     Some(x) => {
                         if x == key {
-                            (value.hover.as_ref().unwrap_or(&value.normal), key)
+                            (
+                                &value.text,
+                                value
+                                    .hover_font_style
+                                    .as_ref()
+                                    .unwrap_or(&value.normal_font_style),
+                                key,
+                            )
                         } else {
-                            (&value.normal, key)
+                            (&value.text, &value.normal_font_style, key)
                         }
                     }
-                    None => (&value.normal, key),
+                    None => (&value.text, &value.normal_font_style, key),
                 })
-                .map(|(image, key)| (image, (key + 1) as f32))
-                .map(|(img, index)| {
-                    let mut loc = self.location;
-                    loc.pos.y += self.option_height * index;
-                    (img, loc)
+                .map(|(text, font, key)| (text, font, (key + 1) as f32))
+                .map(|(text, font, index)| {
+                    let mut loc_box = self.location;
+                    let mut loc_text = self.location;
+                    loc_box.pos.y += self.option_height * index;
+                    loc_text.pos.y += (self.option_height * index) + font.size;
+                    (text, font, loc_box, loc_text)
                 })
-                .for_each(|(img, location)| {
-                    gfx.draw_image(img, location);
+                .for_each(|(text, font_style, location_box, location_text)| {
+                    let mut font = font_style.font.0.borrow_mut();
+                    gfx.draw_text(
+                        &mut font,
+                        text,
+                        font_style.size,
+                        font_style.max_width,
+                        font_style.color,
+                        location_text.pos,
+                    );
+                    //gfx.draw_image(img, location);
                     //window.draw_ex(&location, Img(img), Transform::IDENTITY, z + 1);
-                    self.draw_arround_rec(&location, gfx);
+                    self.draw_arround_rec(&location_box, gfx);
                 })
         }
     }

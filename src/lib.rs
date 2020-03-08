@@ -37,6 +37,7 @@ impl MFont {
 }
 
 ///a wrapper arround all the values needed to draw some text
+#[derive(Clone)]
 pub struct FontStyle {
     pub font: MFont,
     pub size: f32,
