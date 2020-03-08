@@ -1,3 +1,10 @@
+# WARNING!
+
+At point of writing the Master branch follows a pull request of quicksilver 4 rather than a release on crates.io or even the master branch.
+This is because at this point quicksilver 4 doesn't have text rendering which is being added by the pull request Mergui targets.
+
+Because of this, use at your own risk as things may break.
+
 # Mergui
 
 A simple gui system for the quicksilver engine, developed for use in [Arena keeper](https://github.com/lenscas/arena_keeper_quick)
