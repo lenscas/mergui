@@ -936,7 +936,7 @@ dependencies = [
 [[package]]
 name = "quicksilver"
 version = "0.4.0-alpha0.2"
-source = "git+https://github.com/ryanisaacg/quicksilver.git?branch=add-font-support#e7d49c27f06563d9cd00bbae86b6990bf336af41"
+source = "git+https://github.com/ryanisaacg/quicksilver.git?branch=add-font-support#dd84f7d4bafa4685df335a8c465a20fd774db9ba"
 dependencies = [
  "blinds 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bytemuck 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
