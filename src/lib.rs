@@ -11,8 +11,8 @@ pub mod widgets;
 pub use crate::context::Context;
 use quicksilver::geom::Vector;
 use quicksilver::graphics::Color;
-use quicksilver::graphics::Font;
 use quicksilver::graphics::Graphics;
+use quicksilver::graphics::{FontRenderer, VectorFont};
 use quicksilver::Result;
 pub(crate) use responses::{
     LayerChannelReceiver, LayerChannelSender, LayerInstructions, LayerNummerId,
@@ -23,16 +23,31 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 #[derive(Clone)]
-pub struct MFont(Rc<RefCell<Font>>);
-
-impl From<Font> for MFont {
-    fn from(from: Font) -> MFont {
-        MFont(Rc::new(RefCell::new(from)))
-    }
+pub struct MFont {
+    pub(crate) renderer: Rc<RefCell<FontRenderer>>,
+    pub(crate) size: f32,
 }
+
 impl MFont {
-    pub async fn load_ttf(gfx: &Graphics, path: &'static str) -> Result<MFont> {
-        Ok(Font::load_ttf(gfx, path).await?.into())
+    pub async fn load_ttf(gfx: &Graphics, path: &'static str, size: f32) -> Result<MFont> {
+        Self::from_font(&VectorFont::load(path).await?, gfx, size)
+    }
+
+    pub fn from_font(font: &VectorFont, gfx: &Graphics, font_size: f32) -> Result<MFont> {
+        Ok(MFont {
+            renderer: Rc::new(RefCell::new(font.to_renderer(gfx, font_size)?)),
+            size: font_size,
+        })
+    }
+
+    pub fn draw(
+        &self,
+        gfx: &mut Graphics,
+        text: &str,
+        color: Color,
+        offset: Vector,
+    ) -> Result<Vector> {
+        self.renderer.borrow_mut().draw(gfx, text, color, offset)
     }
 }
 
@@ -40,10 +55,14 @@ impl MFont {
 #[derive(Clone)]
 pub struct FontStyle {
     pub font: MFont,
-    pub size: f32,
     pub location: Vector,
     pub color: Color,
-    pub max_width: Option<f32>,
+}
+impl FontStyle {
+    fn draw(&self, gfx: &mut Graphics, text: &str) -> Result<Vector> {
+        let mut renderer = self.font.renderer.borrow_mut();
+        renderer.draw(gfx, text, self.color, self.location)
+    }
 }
 
 use std::sync::{Arc, Mutex, MutexGuard};

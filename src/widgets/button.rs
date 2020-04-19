@@ -12,6 +12,7 @@ use quicksilver::graphics::Color;
 use quicksilver::graphics::Graphics;
 use quicksilver::graphics::Image;
 use quicksilver::mint::Vector2;
+use quicksilver::Result;
 
 pub struct ButtonConfig {
     ///The text that will be rendered
@@ -71,9 +72,10 @@ impl Widget for Button {
     fn set_hover(&mut self, _: &Vector2<f32>, hover: bool) {
         self.background.is_hovering = hover;
     }
-    fn render(&mut self, gfx: &mut Graphics) {
-        self.background.render(gfx);
-        self.text.render(gfx);
+    fn render(&mut self, gfx: &mut Graphics) -> Result<()> {
+        self.background.render(gfx)?;
+        self.text.render(gfx)?;
+        Ok(())
     }
     fn on_click(&mut self, _: &Vector2<f32>) {
         self.channel.clicked();

@@ -2,6 +2,7 @@ use super::{ConcealerConfig, Widget, WidgetConfig};
 use crate::{channels::ConcealerManagerReturn, widgets::concealer::Concealer};
 use quicksilver::graphics::Graphics;
 use quicksilver::mint::Vector2;
+use quicksilver::Result;
 use std::sync::{Arc, Mutex};
 
 pub struct ConcealerManagerConfig<T: PartialEq, R: Sized, W: Widget, E: WidgetConfig<R, W>> {
@@ -53,11 +54,12 @@ impl<W: Widget> Widget for ConcealerManager<W> {
             .map(|v| v.is_focusable(pos))
             .unwrap_or(false)
     }
-    fn render(&mut self, gfx: &mut Graphics) {
+    fn render(&mut self, gfx: &mut Graphics) -> Result<()> {
         self.concealers
             .iter_mut()
             .enumerate()
-            .for_each(|(_, widget)| widget.render(gfx))
+            .map(|(_, widget)| widget.render(gfx))
+            .collect::<Result<_>>()
     }
     fn get_cursor_on_hover(&self, pos: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
         self.get_hovered(*pos)

@@ -1,7 +1,10 @@
 use crate::widgets::{widget_traits::WidgetConfig, Widget};
 use crate::{channels::InputChannel, FontStyle};
 use quicksilver::geom::{Rectangle, Shape};
-use quicksilver::{graphics::Color, mint::Vector2};
+use quicksilver::{
+    Result,
+    {graphics::Color, mint::Vector2},
+};
 
 pub struct PlaceholderConfig {
     pub font: FontStyle,
@@ -44,7 +47,7 @@ impl Widget for Input {
     fn is_focusable(&self, _: &Vector2<f32>) -> bool {
         true
     }
-    fn render(&mut self, gfx: &mut quicksilver::graphics::Graphics) {
+    fn render(&mut self, gfx: &mut quicksilver::graphics::Graphics) -> Result<()> {
         gfx.stroke_rect(&self.config.location, Color::BLACK);
         let val = self.value.get();
         let (val, font) = if val == "" {
@@ -57,11 +60,11 @@ impl Widget for Input {
         };
         let pos = {
             let mut pos = self.config.location.pos;
-            pos.y += font.size;
+            pos.y += font.font.size;
             pos
         };
-        let mut v = font.font.0.borrow_mut();
-        gfx.draw_text(&mut v, &val, font.size, font.max_width, font.color, pos);
+        font.font.draw(gfx, &val, font.color, pos)?;
+        Ok(())
     }
     fn get_cursor_on_hover(&self, _: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
         quicksilver::lifecycle::CursorIcon::Text

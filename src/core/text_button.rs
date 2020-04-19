@@ -5,6 +5,7 @@ use crate::{
 };
 use quicksilver::graphics::Graphics;
 use quicksilver::mint::Vector2;
+use quicksilver::Result;
 //use quicksilver::prelude::{Image, Img, Rectangle, Transform, Vector, Window};
 
 ///Is used to render text to the screen that the user can click on.
@@ -42,15 +43,9 @@ impl Widget for TextButton {
     fn is_focusable(&self, _: &Vector2<f32>) -> bool {
         false
     }
-    fn render(&mut self, gfx: &mut Graphics) {
-        gfx.draw_text(
-            &mut self.button.font_style.font.0.borrow_mut(),
-            &self.button.text,
-            self.button.font_style.size,
-            self.button.font_style.max_width,
-            self.button.font_style.color,
-            self.button.font_style.location,
-        )
+    fn render(&mut self, gfx: &mut Graphics) -> Result<()> {
+        self.button.font_style.draw(gfx, &self.button.text)?;
+        Ok(())
     }
     fn on_click(&mut self, _location: &Vector2<f32>) {
         self.channel.clicked();

@@ -7,10 +7,8 @@ use quicksilver::graphics::Color;
 use quicksilver::graphics::Graphics;
 use quicksilver::graphics::Image;
 use quicksilver::mint::Vector2;
+use quicksilver::Result;
 
-/*use quicksilver::prelude::{
-    Background::Col, Color, Image, Img, Line, Rectangle, Shape, Transform, Vector2<f32>, Window,
-};*/
 use std::{
     marker::PhantomData,
     sync::{Arc, Mutex, MutexGuard},
@@ -150,7 +148,7 @@ impl<T: Clone> Widget for DropDown<T> {
             self.hover_over = None;
         }
     }
-    fn render(&mut self, gfx: &mut Graphics) {
+    fn render(&mut self, gfx: &mut Graphics) -> Result<()> {
         gfx.draw_image(&self.open_button, self.get_location_open_button());
         self.draw_arround_rec(&self.location, gfx);
         let values = self.values();
@@ -160,17 +158,14 @@ impl<T: Clone> Widget for DropDown<T> {
             .or_else(|| values.get(0));
 
         if let Some(selected) = selected {
-            let mut font = selected.normal_font_style.font.0.borrow_mut();
             let mut pos = self.location.pos;
-            pos.y += selected.normal_font_style.size;
-            gfx.draw_text(
-                &mut font,
+            pos.y += selected.normal_font_style.font.size;
+            selected.normal_font_style.font.draw(
+                gfx,
                 &selected.text,
-                selected.normal_font_style.size,
-                selected.normal_font_style.max_width,
                 selected.normal_font_style.color,
                 pos,
-            );
+            )?;
         }
         drop(values);
         let hovered = self.hover_over.and_then(|v| self.vector_to_index(v));
@@ -201,24 +196,19 @@ impl<T: Clone> Widget for DropDown<T> {
                     let mut loc_box = self.location;
                     let mut loc_text = self.location;
                     loc_box.pos.y += self.option_height * index;
-                    loc_text.pos.y += (self.option_height * index) + font.size;
+                    loc_text.pos.y += (self.option_height * index) + font.font.size;
                     (text, font, loc_box, loc_text)
                 })
-                .for_each(|(text, font_style, location_box, location_text)| {
-                    let mut font = font_style.font.0.borrow_mut();
-                    gfx.draw_text(
-                        &mut font,
-                        text,
-                        font_style.size,
-                        font_style.max_width,
-                        font_style.color,
-                        location_text.pos,
-                    );
-                    //gfx.draw_image(img, location);
-                    //window.draw_ex(&location, Img(img), Transform::IDENTITY, z + 1);
+                .map(|(text, font_style, location_box, location_text)| {
+                    font_style
+                        .font
+                        .draw(gfx, text, font_style.color, location_text.pos)?;
                     self.draw_arround_rec(&location_box, gfx);
+                    Ok(())
                 })
+                .collect::<Result<_>>()?;
         }
+        Ok(())
     }
     fn on_click(&mut self, pos: &Vector2<f32>) {
         if let Some(selected) = self.vector_to_index(*pos) {
