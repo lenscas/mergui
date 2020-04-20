@@ -109,7 +109,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
     let conf = DropDownConfig {
         values: vec![
             (
-                "awesome",
+                "a̐éö̲",
                 FontStyle {
                     font: MFont::from_font(&base_font, &gfx, 30.0)?,
                     location: Vector::new(10, 55),
@@ -117,7 +117,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
                 },
             ),
             (
-                "second",
+                "a̐éö̲",
                 FontStyle {
                     font: MFont::from_font(&base_font, &gfx, 35.0)?,
                     location: Vector::new(15, 55),
@@ -143,10 +143,10 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         },
         placeholder: None, //Option<PlaceholderConfig>,
         location: Rectangle::new((100, 355), (160, 50)),
-        start_value: None,
+        start_value: Some(String::from("a̐éö̲")),
     };
     let _text_input = context.add_widget(config, &layer).unwrap();
-    gfx.clear(Color::WHITE);
+    gfx.clear(Color::BLACK);
     context.render(&mut gfx)?;
 
     gfx.present(&window)?;
@@ -155,7 +155,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         while let Some(e) = events.next_event().await {
             context.event(&e, &window);
         }
-        gfx.clear(Color::WHITE);
+        gfx.clear(Color::RED);
         context.render(&mut gfx)?;
         gfx.present(&window)?;
     }

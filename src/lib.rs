@@ -12,7 +12,7 @@ pub use crate::context::Context;
 use quicksilver::geom::Vector;
 use quicksilver::graphics::Color;
 use quicksilver::graphics::Graphics;
-use quicksilver::graphics::{FontRenderer, VectorFont};
+use quicksilver::graphics::{FontRenderer, LayoutGlyph, VectorFont};
 use quicksilver::Result;
 pub(crate) use responses::{
     LayerChannelReceiver, LayerChannelSender, LayerInstructions, LayerNummerId,
@@ -38,6 +38,18 @@ impl MFont {
             renderer: Rc::new(RefCell::new(font.to_renderer(gfx, font_size)?)),
             size: font_size,
         })
+    }
+
+    pub fn layout_glyphs(
+        &self,
+        gfx: &mut Graphics,
+        text: &str,
+        max_width: Option<f32>,
+        callback: impl FnMut(&mut Graphics, LayoutGlyph),
+    ) -> Result<Vector> {
+        self.renderer
+            .borrow_mut()
+            .layout_glyphs(gfx, text, max_width, callback)
     }
 
     pub fn draw(
