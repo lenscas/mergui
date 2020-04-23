@@ -247,12 +247,12 @@ impl<'a> Context<'a> {
         }
     }
     ///Call this in the render function of your state to render every widget
-    pub fn render(&mut self, gfx: &mut Graphics) -> QuickResult<()> {
+    pub fn render(&mut self, gfx: &mut Graphics, window: &Window) -> QuickResult<()> {
         self.handle_extern_events();
         let mut widgets = Context::get_widgets_mut(&mut self.to_display);
         widgets
             .iter_mut()
-            .map(|(_, widget)| widget.render(gfx))
+            .map(|(_, widget)| widget.render(gfx, window))
             .collect()
     }
     ///Adds a widget configuration to a given layer.

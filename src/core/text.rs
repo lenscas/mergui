@@ -2,7 +2,7 @@ use crate::widgets::{Widget, WidgetConfig};
 use crate::FontStyle;
 use quicksilver::graphics::Graphics;
 use quicksilver::mint::Vector2;
-use quicksilver::Result;
+use quicksilver::{lifecycle::Window, Result};
 
 ///Is used to render text to the screen
 pub struct Text {
@@ -23,7 +23,7 @@ impl Widget for Text {
     fn is_focusable(&self, _: &Vector2<f32>) -> bool {
         false
     }
-    fn render(&mut self, gfx: &mut Graphics) -> Result<()> {
+    fn render(&mut self, gfx: &mut Graphics, _: &Window) -> Result<()> {
         self.font_style.draw(gfx, &self.text)?;
         Ok(())
     }

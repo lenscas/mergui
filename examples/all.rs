@@ -147,7 +147,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
     };
     let _text_input = context.add_widget(config, &layer).unwrap();
     gfx.clear(Color::BLACK);
-    context.render(&mut gfx)?;
+    context.render(&mut gfx, &window)?;
 
     gfx.present(&window)?;
 
@@ -156,7 +156,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
             context.event(&e, &window);
         }
         gfx.clear(Color::RED);
-        context.render(&mut gfx)?;
+        context.render(&mut gfx, &window)?;
         gfx.present(&window)?;
     }
 }

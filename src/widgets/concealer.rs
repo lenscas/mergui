@@ -2,7 +2,7 @@ use super::{button::Button, ButtonConfig, Widget, WidgetConfig};
 use crate::channels::concealer::ConcealerReturn;
 use quicksilver::graphics::Graphics;
 use quicksilver::mint::Vector2;
-use quicksilver::Result;
+use quicksilver::{lifecycle::Window, Result};
 
 //use quicksilver::prelude::{Vector2<f32>, Window};
 use std::{
@@ -84,13 +84,13 @@ impl<W: Widget> Widget for Concealer<W> {
             }
         }
     }
-    fn render(&mut self, gfx: &mut Graphics) -> Result<()> {
-        self.button.render(gfx)?;
+    fn render(&mut self, gfx: &mut Graphics, w: &Window) -> Result<()> {
+        self.button.render(gfx, w)?;
         if !self.is_concealing() {
             self.hidden_widgets
                 .iter_mut()
                 .enumerate()
-                .map(|(_, widget)| widget.render(gfx))
+                .map(|(_, widget)| widget.render(gfx, w))
                 .collect::<Result<_>>()?;
         }
         Ok(())

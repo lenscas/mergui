@@ -7,7 +7,7 @@ use quicksilver::graphics::Color;
 use quicksilver::graphics::Graphics;
 use quicksilver::graphics::Image;
 use quicksilver::mint::Vector2;
-use quicksilver::Result;
+use quicksilver::{lifecycle::Window, Result};
 
 //use quicksilver::prelude::{Blended, Color, Img, Rectangle, Transform, Vector, Window};
 
@@ -49,7 +49,7 @@ impl Widget for ImageButton {
     fn is_focusable(&self, _: &Vector2<f32>) -> bool {
         false
     }
-    fn render(&mut self, gfx: &mut Graphics) -> Result<()> {
+    fn render(&mut self, gfx: &mut Graphics, _: &Window) -> Result<()> {
         match (self.button.color, self.button.hover_color, self.is_hovering) {
             (Some(color), _, false) | (Some(color), None, true) => {
                 gfx.draw_image_tinted(&self.button.image, self.button.location, color)

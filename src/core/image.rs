@@ -2,7 +2,7 @@ use crate::widgets::{Widget, WidgetConfig};
 use quicksilver::geom::Rectangle;
 use quicksilver::graphics::Graphics;
 use quicksilver::mint::Vector2;
-use quicksilver::Result;
+use quicksilver::{lifecycle::Window, Result};
 //use quicksilver::prelude::{Img, Rectangle, Transform, Vector, Window};
 ///A simple unfocusable, uninteractable image.
 pub struct Image {
@@ -23,7 +23,7 @@ impl Widget for Image {
     fn is_focusable(&self, _: &Vector2<f32>) -> bool {
         false
     }
-    fn render(&mut self, gfx: &mut Graphics) -> Result<()> {
+    fn render(&mut self, gfx: &mut Graphics, _: &Window) -> Result<()> {
         gfx.draw_image(&self.image, self.location);
         Ok(())
     }

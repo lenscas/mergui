@@ -2,7 +2,8 @@ use crate::widgets::{widget_traits::WidgetConfig, Widget};
 use crate::{channels::InputChannel, FontStyle};
 use quicksilver::geom::{Rectangle, Shape, Vector};
 use quicksilver::{
-    graphics::LayoutGlyph,
+    graphics::{Image, LayoutGlyph, PixelFormat, Surface},
+    lifecycle::Window,
     Result,
     {
         graphics::{Color, Graphics},
@@ -47,26 +48,31 @@ impl Input {
         gfx: &mut Graphics,
         text: &str,
         font: &FontStyle,
-    ) -> Result<(u32, u32, Vec<LayoutGlyph>)> {
+        x_offset: f32,
+    ) -> Result<(f32, f32, Vec<LayoutGlyph>)> {
         let mut glyphs = Vec::new();
-        let mut total_length = 0;
-        let mut length_before_cursor = 0;
+        let mut length_before_cursor = 0.0;
         let cursor_at_from_left = cursor_at;
         font.font.layout_glyphs(gfx, &text, None, |_, glyph| {
-            total_length += glyph.glyph.bounds.width;
-            if glyphs.len() < cursor_at_from_left {
-                length_before_cursor += glyph.glyph.bounds.width;
+            if glyphs.len() + 1 == cursor_at_from_left {
+                length_before_cursor =
+                    glyph.position.x + glyph.glyph.bounds.width as f32 - x_offset;
             }
             glyphs.push(glyph);
         })?;
+        let total_length = glyphs
+            .last()
+            .map(|glyph| glyph.position.x + glyph.glyph.bounds.width as f32 - x_offset)
+            .unwrap_or(0.0);
         Ok((length_before_cursor, total_length, glyphs))
     }
-
+    /*
     fn select_glyphs_to_draw(
         &self,
-        total_length: u32,
-        mut length_before_cursor: u32,
+        total_length: f32,
+        mut length_before_cursor: f32,
         glyphs: Vec<LayoutGlyph>,
+        x_offset: f32,
     ) -> Vec<(usize, LayoutGlyph)> {
         let max_size = self.config.location.width();
         if total_length as f32 > max_size {
@@ -102,8 +108,17 @@ impl Input {
             glyphs.into_iter().enumerate().collect()
         }
     }
-
-    fn draw_text(&mut self, gfx: &mut Graphics) -> Result<()> {
+    */
+    fn calc_offset(max_size: f32, current_total_size: f32, size_before_cursor: f32) -> f32 {
+        if current_total_size <= max_size {
+            return 0.0;
+        }
+        if size_before_cursor <= max_size {
+            return 0.0;
+        }
+        size_before_cursor - max_size
+    }
+    fn draw_text(&mut self, gfx: &mut Graphics, window: &Window) -> Result<()> {
         let val = self.value.get();
         let (val, font) = if val == "" {
             match &mut self.config.placeholder {
@@ -114,8 +129,77 @@ impl Input {
             (val.as_str(), &mut self.config.font)
         };
 
-        let (length_before_cursor, total_length, glyphs) =
-            Self::get_glyphs(self.cursor_at_from_left, gfx, val, font)?;
+        let (size_before_cursor, total_length, glyphs) = Self::get_glyphs(
+            self.cursor_at_from_left,
+            gfx,
+            val,
+            font,
+            self.config.location.x(),
+        )?;
+
+        gfx.flush(None)?;
+        let mut surface = Surface::new(
+            gfx,
+            Image::from_raw(gfx, None, 512, 512, PixelFormat::RGBA)?,
+        )?;
+        gfx.fit_to_surface(&surface)?;
+        gfx.clear(Color::BLUE);
+        gfx.fill_rect(&Rectangle::new((0, 0), (10, 10)), Color::GREEN);
+        gfx.flush(Some(&surface))?;
+        //gfx.clear(Color::RED);
+        gfx.fit_to_window(&window);
+        let image = surface
+            .detach()
+            .ok_or(quicksilver::QuicksilverError::SurfaceImageError)?;
+        gfx.draw_image(&image, Rectangle::new((10, 10), (512, 512)));
+
+        /*
+        let offset = Self::calc_offset(
+            self.config.location.width(),
+            total_length,
+            size_before_cursor,
+        );
+        glyphs.iter().enumerate().for_each(|(key, layout_glyph)| {
+            let glyph_bounds = layout_glyph.glyph.bounds;
+            let pos = Vector::new(
+                layout_glyph.position.x - offset,
+                layout_glyph.position.y as f32 + self.config.font.font.size,
+            );
+
+            let glyph_size = Vector::new(glyph_bounds.width as f32, glyph_bounds.height as f32);
+            let region = Rectangle::new(
+                Vector::new(glyph_bounds.x as f32, glyph_bounds.y as f32),
+                glyph_size,
+            );
+
+            gfx.draw_subimage_tinted(
+                &layout_glyph.image,
+                region,
+                Rectangle::new(pos, glyph_size),
+                self.config.font.color,
+            );
+            if key + 1 == self.cursor_at_from_left {
+                let cursor_pos = Vector::new(pos.x + glyph_bounds.width as f32, 0);
+                gfx.fill_rect(
+                    &Rectangle::new(cursor_pos, Vector::new(1, self.config.location.height())),
+                    Color::GREEN,
+                );
+            }
+        });*/
+        /*
+        if self.cursor_at_from_left == 0 {
+            gfx.fill_rect(
+                &Rectangle::new(
+                    Vector::new(0.0, 0.0),
+                    Vector::new(1, self.config.location.height()),
+                ),
+                Color::GREEN,
+            );
+        }*/
+
+        //gfx.draw_image(&image, pos);
+
+        /*
         let glyphs_to_draw: Vec<_> =
             self.select_glyphs_to_draw(total_length, length_before_cursor, glyphs);
 
@@ -169,6 +253,7 @@ impl Input {
             Color::GREEN,
         );
 
+        Ok(())*/
         Ok(())
     }
 }
@@ -180,9 +265,9 @@ impl Widget for Input {
     fn is_focusable(&self, _: &Vector2<f32>) -> bool {
         true
     }
-    fn render(&mut self, gfx: &mut Graphics) -> Result<()> {
-        gfx.stroke_rect(&self.config.location, Color::BLACK);
-        self.draw_text(gfx)
+    fn render(&mut self, gfx: &mut Graphics, window: &Window) -> Result<()> {
+        //gfx.stroke_rect(&self.config.location, Color::BLACK);
+        self.draw_text(gfx, window)
     }
 
     fn get_cursor_on_hover(&self, _: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {

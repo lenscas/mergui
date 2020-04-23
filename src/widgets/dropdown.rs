@@ -7,7 +7,7 @@ use quicksilver::graphics::Color;
 use quicksilver::graphics::Graphics;
 use quicksilver::graphics::Image;
 use quicksilver::mint::Vector2;
-use quicksilver::Result;
+use quicksilver::{lifecycle::Window, Result};
 
 use std::{
     marker::PhantomData,
@@ -148,7 +148,7 @@ impl<T: Clone> Widget for DropDown<T> {
             self.hover_over = None;
         }
     }
-    fn render(&mut self, gfx: &mut Graphics) -> Result<()> {
+    fn render(&mut self, gfx: &mut Graphics, _: &Window) -> Result<()> {
         gfx.draw_image(&self.open_button, self.get_location_open_button());
         self.draw_arround_rec(&self.location, gfx);
         let values = self.values();
