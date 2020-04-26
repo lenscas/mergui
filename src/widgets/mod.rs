@@ -9,4 +9,5 @@ pub use button::ButtonConfig;
 pub use concealer::ConcealerConfig;
 pub use concealer_manager::ConcealerManagerConfig;
 pub use dropdown::{DropDownConfig, DropDownValueConfig};
+pub use input::{CursorConfig, InputConfig};
 pub use widget_traits::{Widget, WidgetConfig};

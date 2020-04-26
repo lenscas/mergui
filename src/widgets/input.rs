@@ -2,9 +2,9 @@ use crate::widgets::{widget_traits::WidgetConfig, Widget};
 use crate::{channels::InputChannel, FontStyle};
 use quicksilver::geom::{Rectangle, Shape, Vector};
 use quicksilver::{
-    graphics::{Image, LayoutGlyph, PixelFormat, Surface},
+    graphics::LayoutGlyph,
     lifecycle::Window,
-    Result,
+    Result, Timer,
     {
         graphics::{Color, Graphics},
         mint::Vector2,
@@ -15,17 +15,44 @@ pub struct PlaceholderConfig {
     pub font: FontStyle,
     pub text: String,
 }
+
+pub struct CursorConfig {
+    pub color: Color,
+    pub thickness: f32,
+    pub time_on: Timer,
+    pub time_off: Timer,
+}
+
+impl Default for CursorConfig {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl CursorConfig {
+    pub fn new() -> Self {
+        Self {
+            color: Color::BLACK,
+            thickness: 2.0,
+            time_on: Timer::time_per_second(1.0),
+            time_off: Timer::time_per_second(2.0),
+        }
+    }
+}
+
 pub struct InputConfig {
     pub font: FontStyle,
     pub placeholder: Option<PlaceholderConfig>,
     pub location: Rectangle,
     pub start_value: Option<String>,
+    pub cursor_config: CursorConfig,
 }
 
 pub struct Input {
     config: InputConfig,
     value: InputChannel,
     cursor_at_from_left: usize,
+    cursor_is_visible: bool,
+    has_focus: bool,
 }
 
 impl WidgetConfig<InputChannel, Input> for InputConfig {
@@ -36,6 +63,8 @@ impl WidgetConfig<InputChannel, Input> for InputConfig {
                 config: self,
                 value: InputChannel::clone(&value),
                 cursor_at_from_left: 0,
+                cursor_is_visible: true,
+                has_focus: false,
             },
             value,
         )
@@ -48,68 +77,25 @@ impl Input {
         gfx: &mut Graphics,
         text: &str,
         font: &FontStyle,
-        x_offset: f32,
+        _: f32,
     ) -> Result<(f32, f32, Vec<LayoutGlyph>)> {
         let mut glyphs = Vec::new();
         let mut length_before_cursor = 0.0;
         let cursor_at_from_left = cursor_at;
         font.font.layout_glyphs(gfx, &text, None, |_, glyph| {
             if glyphs.len() + 1 == cursor_at_from_left {
-                length_before_cursor =
-                    glyph.position.x + glyph.glyph.bounds.width as f32 - x_offset;
+                length_before_cursor = glyph.position.x + glyph.glyph.bounds.width as f32;
             }
             glyphs.push(glyph);
         })?;
         let total_length = glyphs
             .last()
-            .map(|glyph| glyph.position.x + glyph.glyph.bounds.width as f32 - x_offset)
+            .map(|glyph| glyph.position.x + glyph.glyph.bounds.width as f32)
             .unwrap_or(0.0);
         Ok((length_before_cursor, total_length, glyphs))
     }
-    /*
-    fn select_glyphs_to_draw(
-        &self,
-        total_length: f32,
-        mut length_before_cursor: f32,
-        glyphs: Vec<LayoutGlyph>,
-        x_offset: f32,
-    ) -> Vec<(usize, LayoutGlyph)> {
-        let max_size = self.config.location.width();
-        if total_length as f32 > max_size {
-            if (length_before_cursor as f32) < max_size {
-                let mut current_size = length_before_cursor;
-                glyphs
-                    .into_iter()
-                    .enumerate()
-                    .take_while(|(key, val)| {
-                        if key < &self.cursor_at_from_left {
-                            true
-                        } else {
-                            current_size += val.glyph.bounds.width;
-                            (current_size as f32) < max_size
-                        }
-                    })
-                    .collect()
-            } else {
-                glyphs
-                    .into_iter()
-                    .enumerate()
-                    .skip_while(|(_, v)| {
-                        length_before_cursor -= v.glyph.bounds.width;
-                        println!(
-                            "length before {}, max length {}",
-                            length_before_cursor, max_size
-                        );
-                        (length_before_cursor as f32) > max_size
-                    })
-                    .collect()
-            }
-        } else {
-            glyphs.into_iter().enumerate().collect()
-        }
-    }
-    */
-    fn calc_offset(max_size: f32, current_total_size: f32, size_before_cursor: f32) -> f32 {
+
+    fn _calc_offset(max_size: f32, current_total_size: f32, size_before_cursor: f32) -> f32 {
         if current_total_size <= max_size {
             return 0.0;
         }
@@ -118,7 +104,7 @@ impl Input {
         }
         size_before_cursor - max_size
     }
-    fn draw_text(&mut self, gfx: &mut Graphics, window: &Window) -> Result<()> {
+    fn draw_text(&mut self, gfx: &mut Graphics, _: &Window) -> Result<()> {
         let val = self.value.get();
         let (val, font) = if val == "" {
             match &mut self.config.placeholder {
@@ -129,41 +115,20 @@ impl Input {
             (val.as_str(), &mut self.config.font)
         };
 
-        let (size_before_cursor, total_length, glyphs) = Self::get_glyphs(
+        let (size_before_cursor, _, glyphs) = Self::get_glyphs(
             self.cursor_at_from_left,
             gfx,
             val,
             font,
             self.config.location.x(),
         )?;
-
-        gfx.flush(None)?;
-        let mut surface = Surface::new(
-            gfx,
-            Image::from_raw(gfx, None, 512, 512, PixelFormat::RGBA)?,
-        )?;
-        gfx.fit_to_surface(&surface)?;
-        gfx.clear(Color::BLUE);
-        gfx.fill_rect(&Rectangle::new((0, 0), (10, 10)), Color::GREEN);
-        gfx.flush(Some(&surface))?;
-        //gfx.clear(Color::RED);
-        gfx.fit_to_window(&window);
-        let image = surface
-            .detach()
-            .ok_or(quicksilver::QuicksilverError::SurfaceImageError)?;
-        gfx.draw_image(&image, Rectangle::new((10, 10), (512, 512)));
-
-        /*
-        let offset = Self::calc_offset(
-            self.config.location.width(),
-            total_length,
-            size_before_cursor,
-        );
-        glyphs.iter().enumerate().for_each(|(key, layout_glyph)| {
+        glyphs.iter().for_each(|layout_glyph| {
             let glyph_bounds = layout_glyph.glyph.bounds;
             let pos = Vector::new(
-                layout_glyph.position.x - offset,
-                layout_glyph.position.y as f32 + self.config.font.font.size,
+                layout_glyph.position.x + self.config.location.pos.x,
+                layout_glyph.position.y as f32
+                    + self.config.font.font.size
+                    + self.config.location.pos.y,
             );
 
             let glyph_size = Vector::new(glyph_bounds.width as f32, glyph_bounds.height as f32);
@@ -178,82 +143,34 @@ impl Input {
                 Rectangle::new(pos, glyph_size),
                 self.config.font.color,
             );
-            if key + 1 == self.cursor_at_from_left {
-                let cursor_pos = Vector::new(pos.x + glyph_bounds.width as f32, 0);
-                gfx.fill_rect(
-                    &Rectangle::new(cursor_pos, Vector::new(1, self.config.location.height())),
-                    Color::GREEN,
-                );
+        });
+        if !self.has_focus {
+            return Ok(());
+        }
+        if self.cursor_is_visible {
+            if self.config.cursor_config.time_on.exhaust().is_some() {
+                self.cursor_is_visible = false;
+                self.config.cursor_config.time_off.reset();
             }
-        });*/
-        /*
-        if self.cursor_at_from_left == 0 {
+        } else if self.config.cursor_config.time_off.exhaust().is_some() {
+            self.cursor_is_visible = true;
+            self.config.cursor_config.time_on.reset();
+        }
+        if self.cursor_is_visible {
             gfx.fill_rect(
                 &Rectangle::new(
-                    Vector::new(0.0, 0.0),
-                    Vector::new(1, self.config.location.height()),
+                    (
+                        self.config.location.pos.x + size_before_cursor,
+                        self.config.location.pos.y,
+                    ),
+                    (
+                        self.config.cursor_config.thickness,
+                        self.config.location.size.y,
+                    ),
                 ),
-                Color::GREEN,
+                self.config.cursor_config.color,
             );
-        }*/
-
-        //gfx.draw_image(&image, pos);
-
-        /*
-        let glyphs_to_draw: Vec<_> =
-            self.select_glyphs_to_draw(total_length, length_before_cursor, glyphs);
-
-        let mut cursor_x = self.config.location.pos.x;
-        let x_offset = glyphs_to_draw
-            .get(0)
-            .map(|(_, val)| val.position.x as f32)
-            .unwrap_or_default()
-            - self.config.location.x();
-
-        let mut last_x = -1.0;
-        let mut cursor_key = 0;
-        glyphs_to_draw
-            .into_iter()
-            .map(|(key, glyph)| (key + 1, glyph))
-            .for_each(|(_, glyph)| {
-                let glyph_bounds = glyph.glyph.bounds;
-                let pos = Vector::new(
-                    glyph.position.x - x_offset,
-                    glyph.position.y as f32 + self.config.location.y() + self.config.font.font.size,
-                );
-
-                let glyph_size = Vector::new(glyph_bounds.width as f32, glyph_bounds.height as f32);
-                let region = Rectangle::new(
-                    Vector::new(glyph_bounds.x as f32, glyph_bounds.y as f32),
-                    glyph_size,
-                );
-
-                gfx.draw_subimage_tinted(
-                    &glyph.image,
-                    region,
-                    Rectangle::new(pos, glyph_size),
-                    self.config.font.color,
-                );
-                last_x = pos.x + glyph_bounds.width as f32;
-                cursor_key += 1;
-                if cursor_key == self.cursor_at_from_left {
-                    cursor_x = last_x;
-                }
-            });
-
-        if cursor_key < self.cursor_at_from_left {
-            cursor_x = last_x;
         }
-
-        gfx.fill_rect(
-            &Rectangle::new(
-                Vector::new(cursor_x, self.config.location.y()),
-                Vector::new(1, self.config.location.height()),
-            ),
-            Color::GREEN,
-        );
-
-        Ok(())*/
         Ok(())
     }
 }
@@ -266,10 +183,19 @@ impl Widget for Input {
         true
     }
     fn render(&mut self, gfx: &mut Graphics, window: &Window) -> Result<()> {
-        //gfx.stroke_rect(&self.config.location, Color::BLACK);
+        gfx.stroke_rect(&self.config.location, Color::BLACK);
         self.draw_text(gfx, window)
     }
-
+    fn set_focus(&mut self, _: &Vector2<f32>, focus: bool) {
+        if focus {
+            self.config.cursor_config.time_off.reset();
+            self.config.cursor_config.time_on.reset();
+            self.cursor_is_visible = true;
+        } else {
+            self.cursor_is_visible = false;
+        }
+        self.has_focus = focus
+    }
     fn get_cursor_on_hover(&self, _: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
         quicksilver::lifecycle::CursorIcon::Text
     }
@@ -277,8 +203,9 @@ impl Widget for Input {
     fn on_key_press(&mut self, key: quicksilver::lifecycle::Key, state: bool) {
         use quicksilver::lifecycle::Key::*;
         if Back == key && state && self.cursor_at_from_left > 0 {
+            let current_char_count = self.value.char_count();
             self.value.remove_char_at(self.cursor_at_from_left - 1);
-            self.cursor_at_from_left -= 1;
+            self.cursor_at_from_left -= current_char_count - self.value.char_count();
         }
         if key == Left && state && self.cursor_at_from_left > 0 {
             self.cursor_at_from_left -= 1;
@@ -287,8 +214,6 @@ impl Widget for Input {
             let size = self.value.char_count();
             if self.cursor_at_from_left < size {
                 self.cursor_at_from_left += 1;
-            } else {
-                println!("reached end. key : {}", size);
             }
         }
     }
@@ -297,12 +222,13 @@ impl Widget for Input {
         if typed_char.is_control() {
             return;
         }
-        if self.cursor_at_from_left > self.value.char_count() {
+        let old_count = self.value.char_count();
+        if self.cursor_at_from_left == old_count {
             self.value.push(typed_char)
         } else {
             self.value
                 .insert_char_at_place(self.cursor_at_from_left, typed_char)
         };
-        self.cursor_at_from_left += 1;
+        self.cursor_at_from_left += self.value.char_count() - old_count;
     }
 }

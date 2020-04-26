@@ -213,11 +213,16 @@ impl<'a> Context<'a> {
                     })
                     .collect();
                 let cursor = &self.mouse_cursor;
+                let current_focused_id = self.widget_with_focus;
                 self.widget_with_focus =
                     maybe_focused_widgets
                         .pop()
                         .map(|(id, widget, is_focusable)| {
-                            if is_focusable {
+                            if is_focusable
+                                && current_focused_id
+                                    .map(|(layer, widget)| id.0 != layer || id.1 != widget)
+                                    .unwrap_or(true)
+                            {
                                 widget.set_focus(cursor, true)
                             };
                             widget.on_click(cursor);

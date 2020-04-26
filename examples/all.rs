@@ -6,7 +6,7 @@ use quicksilver::{
     geom::{Rectangle, Vector},
     graphics::{Color, Graphics, Image, VectorFont},
     lifecycle::{run, EventStream, Settings, Window},
-    Result,
+    Result, Timer,
 };
 
 use mergui::{core::Text, Context, FontStyle, MFont};
@@ -144,19 +144,22 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         placeholder: None, //Option<PlaceholderConfig>,
         location: Rectangle::new((100, 355), (160, 50)),
         start_value: Some(String::from("a̐éö̲")),
+        cursor_config: Default::default(),
     };
     let _text_input = context.add_widget(config, &layer).unwrap();
     gfx.clear(Color::BLACK);
     context.render(&mut gfx, &window)?;
 
     gfx.present(&window)?;
-
+    let mut render_timer = Timer::time_per_second(60.0);
     loop {
         while let Some(e) = events.next_event().await {
             context.event(&e, &window);
         }
-        gfx.clear(Color::RED);
-        context.render(&mut gfx, &window)?;
-        gfx.present(&window)?;
+        if render_timer.exhaust().is_some() {
+            gfx.clear(Color::RED);
+            context.render(&mut gfx, &window)?;
+            gfx.present(&window)?;
+        }
     }
 }
