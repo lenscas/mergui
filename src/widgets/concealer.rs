@@ -2,6 +2,8 @@ use super::{button::Button, ButtonConfig, Widget, WidgetConfig};
 use crate::channels::concealer::ConcealerReturn;
 use quicksilver::graphics::Graphics;
 use quicksilver::mint::Vector2;
+use quicksilver::{lifecycle::Window, Result};
+
 //use quicksilver::prelude::{Vector2<f32>, Window};
 use std::{
     marker::PhantomData,
@@ -82,14 +84,16 @@ impl<W: Widget> Widget for Concealer<W> {
             }
         }
     }
-    fn render(&mut self, gfx: &mut Graphics) {
-        self.button.render(gfx);
+    fn render(&mut self, gfx: &mut Graphics, w: &Window) -> Result<()> {
+        self.button.render(gfx, w)?;
         if !self.is_concealing() {
             self.hidden_widgets
                 .iter_mut()
                 .enumerate()
-                .for_each(|(_, widget)| widget.render(gfx))
+                .map(|(_, widget)| widget.render(gfx, w))
+                .collect::<Result<_>>()?;
         }
+        Ok(())
     }
     fn on_click(&mut self, clicked_on: &Vector2<f32>) {
         if self.button.contains(clicked_on) {

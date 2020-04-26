@@ -8,6 +8,7 @@ use quicksilver::graphics::Graphics;
 use quicksilver::lifecycle::MouseButton;
 use quicksilver::lifecycle::Window;
 use quicksilver::mint::Vector2;
+use quicksilver::Result as QuickResult;
 use std::sync::mpsc;
 
 struct Layer<'a> {
@@ -88,21 +89,7 @@ impl<'a> Context<'a> {
         self.widget_with_focus
             .and_then(move |v| self.to_display.get_mut(&v.0).and_then(|x| x.get_mut(v.1)))
     }
-    fn get_widgets<'b>(
-        widgets: &'b IndexMap<u64, Layer<'a>>,
-    ) -> Vec<((u64, u64), &'b Box<dyn Widget + 'a>)> {
-        widgets
-            .iter()
-            .filter(|(_, layer)| layer.is_active)
-            .flat_map(|(layer_id, layer)| {
-                layer
-                    .widgets
-                    .iter()
-                    .map(move |(widget_id, widget)| ((layer_id, widget_id), widget))
-            })
-            .map(|(id, widget)| ((*id.0, *id.1), widget))
-            .collect()
-    }
+
     fn get_widgets_mut<'b>(
         widgets: &'b mut IndexMap<u64, Layer<'a>>,
     ) -> Vec<((u64, u64), &'b mut Box<dyn Widget + 'a>)> {
@@ -226,11 +213,16 @@ impl<'a> Context<'a> {
                     })
                     .collect();
                 let cursor = &self.mouse_cursor;
+                let current_focused_id = self.widget_with_focus;
                 self.widget_with_focus =
                     maybe_focused_widgets
                         .pop()
                         .map(|(id, widget, is_focusable)| {
-                            if is_focusable {
+                            if is_focusable
+                                && current_focused_id
+                                    .map(|(layer, widget)| id.0 != layer || id.1 != widget)
+                                    .unwrap_or(true)
+                            {
                                 widget.set_focus(cursor, true)
                             };
                             widget.on_click(cursor);
@@ -260,12 +252,13 @@ impl<'a> Context<'a> {
         }
     }
     ///Call this in the render function of your state to render every widget
-    pub fn render(&mut self, gfx: &mut Graphics) {
+    pub fn render(&mut self, gfx: &mut Graphics, window: &Window) -> QuickResult<()> {
         self.handle_extern_events();
         let mut widgets = Context::get_widgets_mut(&mut self.to_display);
-        widgets.iter_mut().for_each(|(_, widget)| {
-            widget.render(gfx);
-        });
+        widgets
+            .iter_mut()
+            .map(|(_, widget)| widget.render(gfx, window))
+            .collect()
     }
     ///Adds a widget configuration to a given layer.
     ///

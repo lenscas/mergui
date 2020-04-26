@@ -1,12 +1,12 @@
-use mergui::widgets::{ButtonConfig, ConcealerConfig, DropDownConfig};
+use mergui::widgets::{input::InputConfig, ButtonConfig, ConcealerConfig, DropDownConfig};
 use quicksilver::graphics::blend::{
     BlendChannel, BlendFactor, BlendFunction, BlendInput, BlendMode,
 };
 use quicksilver::{
     geom::{Rectangle, Vector},
-    graphics::{Color, Graphics, Image},
+    graphics::{Color, Graphics, Image, VectorFont},
     lifecycle::{run, EventStream, Settings, Window},
-    Result,
+    Result, Timer,
 };
 
 use mergui::{core::Text, Context, FontStyle, MFont};
@@ -26,16 +26,15 @@ fn main() {
 
 async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Result<()> {
     // Load the Font, just like loading any other asset
-    let font = MFont::load_ttf(&gfx, "font.ttf").await?;
+    let base_font = VectorFont::load("font.ttf").await?;
+    let font = MFont::from_font(&base_font, &gfx, 15.0)?;
     let mut context = Context::new([0.0, 0.0].into());
     let layer = context.add_layer();
 
     let basic_font_style = FontStyle {
         font: font.clone(),
-        size: 15.0,
         location: Vector::new(20, 20),
         color: Color::BLACK,
-        max_width: None,
     };
 
     let conf = Text {
@@ -67,11 +66,9 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         blend_color: Some(Color::GREEN),
         hover_color: Some(Color::RED),
         font_style: FontStyle {
-            font: font.clone(),
-            size: 20.0,
+            font: MFont::from_font(&base_font, &gfx, 20.0)?,
             location: Vector::new(30, 55),
             color: Color::BLUE,
-            max_width: None,
         },
         text: "Some text".into(),
     };
@@ -83,11 +80,9 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
             blend_color: Some(Color::GREEN),
             hover_color: Some(Color::RED),
             font_style: FontStyle {
-                font: font.clone(),
-                size: 20.0,
+                font: MFont::from_font(&base_font, &gfx, 20.0)?,
                 location: Vector::new(30, 55),
                 color: Color::BLUE,
-                max_width: None,
             },
             text: "Concealer".into(),
         },
@@ -99,11 +94,9 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
                 blend_color: Some(Color::GREEN),
                 hover_color: Some(Color::RED),
                 font_style: FontStyle {
-                    font: font.clone(),
-                    size: 20.0,
+                    font: MFont::from_font(&base_font, &gfx, 20.0)?,
                     location: Vector::new(30, 55),
                     color: Color::BLUE,
-                    max_width: None,
                 },
                 text: "Hidden".into(),
             },
@@ -116,17 +109,17 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
     let conf = DropDownConfig {
         values: vec![
             (
-                "awesome",
+                "a̐éö̲",
                 FontStyle {
-                    size: 30.0,
+                    font: MFont::from_font(&base_font, &gfx, 30.0)?,
                     location: Vector::new(10, 55),
                     ..basic_font_style.clone()
                 },
             ),
             (
-                "second",
+                "a̐éö̲",
                 FontStyle {
-                    size: 35.0,
+                    font: MFont::from_font(&base_font, &gfx, 35.0)?,
                     location: Vector::new(15, 55),
                     ..basic_font_style.clone()
                 },
@@ -143,17 +136,30 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
     };
     let _dropdown = context.add_widget(conf, &layer).unwrap();
 
-    gfx.clear(Color::WHITE);
-    context.render(&mut gfx);
+    let config = InputConfig {
+        font: FontStyle {
+            font: MFont::from_font(&base_font, &gfx, 40.0)?,
+            ..basic_font_style.clone()
+        },
+        placeholder: None, //Option<PlaceholderConfig>,
+        location: Rectangle::new((100, 355), (160, 50)),
+        start_value: Some(String::from("a̐éö̲")),
+        cursor_config: Default::default(),
+    };
+    let _text_input = context.add_widget(config, &layer).unwrap();
+    gfx.clear(Color::BLACK);
+    context.render(&mut gfx, &window)?;
 
     gfx.present(&window)?;
-
+    let mut render_timer = Timer::time_per_second(60.0);
     loop {
         while let Some(e) = events.next_event().await {
             context.event(&e, &window);
         }
-        gfx.clear(Color::WHITE);
-        context.render(&mut gfx);
-        gfx.present(&window)?;
+        if render_timer.exhaust().is_some() {
+            gfx.clear(Color::RED);
+            context.render(&mut gfx, &window)?;
+            gfx.present(&window)?;
+        }
     }
 }
