@@ -2,26 +2,25 @@
 
 All notable changes to this project are documented in this file.
 
-The format is based on [Keep a Changelog], and this project adheres to
-[Semantic Versioning]. The file is auto-generated using [Conventional Commits].
-
-[keep a changelog]: https://keepachangelog.com/en/1.0.0/
-[semantic versioning]: https://semver.org/spec/v2.0.0.html
-[conventional commits]: https://www.conventionalcommits.org/en/v1.0.0-beta.4/
-
 ## Overview
+- [`0.1.0-alpha0.1`](#0.1.0-alpha0.1)
+- [`0.0.5`](#005)
+- [`0.0.4`](#004)
+- [`0.0.3`](#003)
 
-- [unreleased](#unreleased)
-- [`0.0.4`](#004) – _2019.12.14_
-- [`0.0.3`](#003) – _2019.12.12_
+## 0.1.0-alpha0.1
 
-## _[Unreleased]_
+- Update to quicksilver 0.4-alpha0.3
+- Add text input field
+- Add an example to show all widgets
+
+## 0.0.5
 
 - feat: Add Text widget ([`92c9995`])
 - feat: Add dropdown widget ([`40c145f`])
 - chore: Update changelog ([`0c0ba84`])
 
-## [0.0.4] – _(cargo-release) mergui version 0.0.4_
+## 0.0.4
 
 _2019.12.14_
 
@@ -45,7 +44,7 @@ greatly appreciated by the community. 💖
 
 - **layer events not being processed in render** ([`bd8fc46`])
 
-## [0.0.3] – _(cargo-release) mergui version 0.0.3_
+## 0.0.3
 
 _2019.12.12_
 
