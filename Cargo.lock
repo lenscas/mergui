@@ -172,6 +172,7 @@ dependencies = [
  "futures-util",
  "glow",
  "glutin",
+ "image",
  "mint",
  "stdweb",
  "wasm-bindgen",
@@ -1440,9 +1441,9 @@ dependencies = [
 
 [[package]]
 name = "quicksilver"
-version = "0.4.0-alpha0.3"
+version = "0.4.0-alpha0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d074a1363ecf8bf115321235310857ca5f23928ff253fb48a3fa20f2c1b43e4"
+checksum = "f793e62f4156ba31a2cd61b8810aa89ada26a4eb18af9d817cd8a4129d8953f2"
 dependencies = [
  "blinds",
  "bytemuck",
