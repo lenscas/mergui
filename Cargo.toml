@@ -13,9 +13,9 @@ repository = "https://github.com/lenscas/mergui"
 
 [features]
 stdweb = ["quicksilver/stdweb"]
-web-sys= ["quicksilver/web-sys"]
+# web-sys= ["quicksilver/web-sys"]
 
 [dependencies]
 indexmap = "1.3.2"
-quicksilver = {version="0.4.0-alpha0.3", default-features=false, features=["ttf","font"]}
+quicksilver = {version="0.4.0-alpha0.4", default-features=false, features=["ttf","font"]}
 unicode-normalization = "0.1.12"

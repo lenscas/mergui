@@ -2,12 +2,11 @@ use crate::{
     channels::clickable::{BasicClickable as Clickable, ClickSetter as Channel},
     widgets::{Widget, WidgetConfig},
 };
-use quicksilver::geom::Rectangle;
+use quicksilver::geom::{Rectangle, Vector};
 use quicksilver::graphics::Color;
 use quicksilver::graphics::Graphics;
 use quicksilver::graphics::Image;
-use quicksilver::mint::Vector2;
-use quicksilver::{lifecycle::Window, Result};
+use quicksilver::{Result, Window};
 
 //use quicksilver::prelude::{Blended, Color, Img, Rectangle, Transform, Vector, Window};
 
@@ -40,13 +39,13 @@ impl WidgetConfig<Clickable, ImageButton> for ImageButtonConfig {
 }
 
 impl Widget for ImageButton {
-    fn contains(&self, point: &Vector2<f32>) -> bool {
+    fn contains(&self, point: &Vector) -> bool {
         point.x >= self.button.location.pos.x
             && point.y >= self.button.location.pos.y
             && point.x <= self.button.location.pos.x + self.button.location.size.x
             && point.y <= self.button.location.pos.y + self.button.location.size.y
     }
-    fn is_focusable(&self, _: &Vector2<f32>) -> bool {
+    fn is_focusable(&self, _: &Vector) -> bool {
         false
     }
     fn render(&mut self, gfx: &mut Graphics, _: &Window) -> Result<()> {
@@ -63,10 +62,10 @@ impl Widget for ImageButton {
         };
         Ok(())
     }
-    fn on_click(&mut self, _location: &Vector2<f32>) {
+    fn on_click(&mut self, _location: &Vector) {
         self.channel.clicked();
     }
-    fn get_cursor_on_hover(&self, _: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
-        quicksilver::lifecycle::CursorIcon::Hand
+    fn get_cursor_on_hover(&self, _: &Vector) -> quicksilver::CursorIcon {
+        quicksilver::CursorIcon::Hand
     }
 }

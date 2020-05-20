@@ -1,6 +1,6 @@
 use quicksilver::graphics::Graphics;
 
-use quicksilver::{lifecycle::Window, mint::Vector2};
+use quicksilver::{geom::Vector, Window};
 
 ///Turns a simple configuration into a real widget that can be drawn and interacted with.
 pub trait WidgetConfig<R: Sized, W: Widget> {
@@ -8,15 +8,15 @@ pub trait WidgetConfig<R: Sized, W: Widget> {
 }
 ///This is the real widget. It isn't meant to interact directly with except when creating other widgets that exist of multiple smaller ones
 pub trait Widget {
-    fn contains(&self, pos: &Vector2<f32>) -> bool;
-    fn is_focusable(&self, pos: &Vector2<f32>) -> bool;
+    fn contains(&self, pos: &Vector) -> bool;
+    fn is_focusable(&self, pos: &Vector) -> bool;
     fn render(&mut self, gfx: &mut Graphics, window: &Window) -> quicksilver::Result<()>;
-    fn get_cursor_on_hover(&self, _: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
-        quicksilver::lifecycle::CursorIcon::Default
+    fn get_cursor_on_hover(&self, _: &Vector) -> quicksilver::CursorIcon {
+        quicksilver::CursorIcon::Default
     }
-    fn set_focus(&mut self, _: &Vector2<f32>, _: bool) {}
-    fn set_hover(&mut self, _: &Vector2<f32>, _: bool) {}
-    fn on_click(&mut self, _location: &Vector2<f32>) {}
-    fn on_key_press(&mut self, _key: quicksilver::blinds::event::Key, _state: bool) {}
+    fn set_focus(&mut self, _: &Vector, _: bool) {}
+    fn set_hover(&mut self, _: &Vector, _: bool) {}
+    fn on_click(&mut self, _location: &Vector) {}
+    fn on_key_press(&mut self, _key: quicksilver::input::Key, _state: bool) {}
     fn on_typed(&mut self, _char: char) {}
 }

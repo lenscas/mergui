@@ -5,8 +5,7 @@ use quicksilver::graphics::blend::{
 use quicksilver::{
     geom::{Rectangle, Vector},
     graphics::{Color, Graphics, Image, VectorFont},
-    lifecycle::{run, EventStream, Settings, Window},
-    Result, Timer,
+    Result, Timer, {run, Input, Settings, Window},
 };
 
 use mergui::{core::Text, Context, FontStyle, MFont};
@@ -24,11 +23,11 @@ fn main() {
     );
 }
 
-async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Result<()> {
+async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()> {
     // Load the Font, just like loading any other asset
     let base_font = VectorFont::load("font.ttf").await?;
     let font = MFont::from_font(&base_font, &gfx, 15.0)?;
-    let mut context = Context::new([0.0, 0.0].into());
+    let mut context = Context::new((0, 0).into());
     let layer = context.add_layer();
 
     let basic_font_style = FontStyle {
@@ -128,7 +127,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
         location: Rectangle::new((100, 300), (160, 50)),
         option_height: 50.0,
         open_button: button.clone(),
-        open_button_size: [100.0, 50.0].into(),
+        open_button_size: (100.0, 50.0).into(),
         selected: Some(0),
         divider_color: Color::BLACK,
         divider_size: 5.0,
@@ -153,7 +152,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
     gfx.present(&window)?;
     let mut render_timer = Timer::time_per_second(60.0);
     loop {
-        while let Some(e) = events.next_event().await {
+        while let Some(e) = inputs.next_event().await {
             context.event(&e, &window);
         }
         if render_timer.exhaust().is_some() {

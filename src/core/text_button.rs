@@ -4,8 +4,7 @@ use crate::{
     widgets::{Widget, WidgetConfig},
 };
 use quicksilver::graphics::Graphics;
-use quicksilver::mint::Vector2;
-use quicksilver::{lifecycle::Window, Result};
+use quicksilver::{geom::Vector, Result, Window};
 //use quicksilver::prelude::{Image, Img, Rectangle, Transform, Vector, Window};
 
 ///Is used to render text to the screen that the user can click on.
@@ -33,24 +32,24 @@ impl WidgetConfig<Clickable, TextButton> for TextButtonConfig {
 }
 
 impl Widget for TextButton {
-    fn contains(&self, _: &Vector2<f32>) -> bool {
+    fn contains(&self, _: &Vector) -> bool {
         false
         /*point.x >= self.button.location.pos.x
         && point.y >= self.button.location.pos.y
         && point.x <= self.button.location.pos.x + self.button.location.size.x
         && point.y <= self.button.location.pos.y + self.button.location.size.y*/
     }
-    fn is_focusable(&self, _: &Vector2<f32>) -> bool {
+    fn is_focusable(&self, _: &Vector) -> bool {
         false
     }
     fn render(&mut self, gfx: &mut Graphics, _: &Window) -> Result<()> {
         self.button.font_style.draw(gfx, &self.button.text)?;
         Ok(())
     }
-    fn on_click(&mut self, _location: &Vector2<f32>) {
+    fn on_click(&mut self, _location: &Vector) {
         self.channel.clicked();
     }
-    fn get_cursor_on_hover(&self, _: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
-        quicksilver::lifecycle::CursorIcon::Hand
+    fn get_cursor_on_hover(&self, _: &Vector) -> quicksilver::CursorIcon {
+        quicksilver::CursorIcon::Hand
     }
 }

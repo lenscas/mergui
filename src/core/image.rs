@@ -1,8 +1,7 @@
 use crate::widgets::{Widget, WidgetConfig};
-use quicksilver::geom::Rectangle;
+use quicksilver::geom::{Rectangle, Vector};
 use quicksilver::graphics::Graphics;
-use quicksilver::mint::Vector2;
-use quicksilver::{lifecycle::Window, Result};
+use quicksilver::{Result, Window};
 //use quicksilver::prelude::{Img, Rectangle, Transform, Vector, Window};
 ///A simple unfocusable, uninteractable image.
 pub struct Image {
@@ -17,10 +16,10 @@ impl WidgetConfig<(), Image> for Image {
     }
 }
 impl Widget for Image {
-    fn contains(&self, _: &Vector2<f32>) -> bool {
+    fn contains(&self, _: &Vector) -> bool {
         false
     }
-    fn is_focusable(&self, _: &Vector2<f32>) -> bool {
+    fn is_focusable(&self, _: &Vector) -> bool {
         false
     }
     fn render(&mut self, gfx: &mut Graphics, _: &Window) -> Result<()> {

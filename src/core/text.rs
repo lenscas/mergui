@@ -1,8 +1,7 @@
 use crate::widgets::{Widget, WidgetConfig};
 use crate::FontStyle;
 use quicksilver::graphics::Graphics;
-use quicksilver::mint::Vector2;
-use quicksilver::{lifecycle::Window, Result};
+use quicksilver::{geom::Vector, Result, Window};
 
 ///Is used to render text to the screen
 pub struct Text {
@@ -17,10 +16,10 @@ impl WidgetConfig<(), Text> for Text {
 }
 
 impl Widget for Text {
-    fn contains(&self, _: &Vector2<f32>) -> bool {
+    fn contains(&self, _: &Vector) -> bool {
         false
     }
-    fn is_focusable(&self, _: &Vector2<f32>) -> bool {
+    fn is_focusable(&self, _: &Vector) -> bool {
         false
     }
     fn render(&mut self, gfx: &mut Graphics, _: &Window) -> Result<()> {

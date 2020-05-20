@@ -6,8 +6,7 @@ use quicksilver::geom::Vector;
 use quicksilver::graphics::Color;
 use quicksilver::graphics::Graphics;
 use quicksilver::graphics::Image;
-use quicksilver::mint::Vector2;
-use quicksilver::{lifecycle::Window, Result};
+use quicksilver::{Result, Window};
 
 use std::{
     marker::PhantomData,
@@ -77,7 +76,7 @@ pub struct DropDownConfig<T: Clone, ValueConfig: Into<DropDownValueConfig<T>>> {
     ///The image that is used to show an extra button the user can click on to open it
     pub open_button: Image,
     ///The size of the button. The button itself is always left to the widget
-    pub open_button_size: Vector2<f32>,
+    pub open_button_size: Vector,
     ///What starts as selected
     pub selected: Option<usize>,
     ///The color of the line between and arround every option
@@ -94,8 +93,8 @@ pub struct DropDown<T: Clone> {
     pub is_open: Arc<Mutex<bool>>,
     pub selected: Arc<Mutex<Option<usize>>>,
     pub open_button: Image,
-    pub open_button_size: Vector2<f32>,
-    pub hover_over: Option<Vector2<f32>>,
+    pub open_button_size: Vector,
+    pub hover_over: Option<Vector>,
     pub divider_color: Color,
     pub divider_size: f32,
 }
@@ -133,15 +132,15 @@ impl<T: Clone, X: Into<DropDownValueConfig<T>>> WidgetConfig<Channel<T>, DropDow
 }
 
 impl<T: Clone> Widget for DropDown<T> {
-    fn contains(&self, point: &Vector2<f32>) -> bool {
+    fn contains(&self, point: &Vector) -> bool {
         self.location.contains(*point)
             || (self.is_open() && self.get_open_rec().contains(*point))
             || self.get_location_open_button().contains(*point)
     }
-    fn is_focusable(&self, _: &Vector2<f32>) -> bool {
+    fn is_focusable(&self, _: &Vector) -> bool {
         true
     }
-    fn set_hover(&mut self, point: &Vector2<f32>, state: bool) {
+    fn set_hover(&mut self, point: &Vector, state: bool) {
         if state {
             self.hover_over = Some(*point);
         } else {
@@ -210,17 +209,17 @@ impl<T: Clone> Widget for DropDown<T> {
         }
         Ok(())
     }
-    fn on_click(&mut self, pos: &Vector2<f32>) {
+    fn on_click(&mut self, pos: &Vector) {
         if let Some(selected) = self.vector_to_index(*pos) {
             *force_mutex(&self.selected) = Some(selected);
         }
         let mut open = force_mutex(&self.is_open);
         *open = !*open;
     }
-    fn get_cursor_on_hover(&self, _: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
-        quicksilver::lifecycle::CursorIcon::Hand
+    fn get_cursor_on_hover(&self, _: &Vector) -> quicksilver::CursorIcon {
+        quicksilver::CursorIcon::Hand
     }
-    fn set_focus(&mut self, _: &Vector2<f32>, focus: bool) {
+    fn set_focus(&mut self, _: &Vector, focus: bool) {
         if !focus {
             *force_mutex(&self.is_open) = focus;
         }
@@ -247,7 +246,7 @@ impl<T: Clone> DropDown<T> {
     pub fn selected(&self) -> Option<usize> {
         *force_mutex(&self.selected)
     }
-    pub fn vector_to_index(&self, point: Vector2<f32>) -> Option<usize> {
+    pub fn vector_to_index(&self, point: Vector) -> Option<usize> {
         if !self.is_open() {
             return None;
         }

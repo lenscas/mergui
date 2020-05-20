@@ -1,10 +1,9 @@
 use super::{button::Button, ButtonConfig, Widget, WidgetConfig};
 use crate::channels::concealer::ConcealerReturn;
 use quicksilver::graphics::Graphics;
-use quicksilver::mint::Vector2;
-use quicksilver::{lifecycle::Window, Result};
+use quicksilver::{geom::Vector, Result, Window};
 
-//use quicksilver::prelude::{Vector2<f32>, Window};
+//use quicksilver::prelude::{Vector, Window};
 use std::{
     marker::PhantomData,
     sync::{Arc, Mutex},
@@ -57,7 +56,7 @@ impl<T: PartialEq, R: Sized, W: Widget, C: WidgetConfig<R, W>>
     }
 }
 impl<W: Widget> Widget for Concealer<W> {
-    fn contains(&self, point: &Vector2<f32>) -> bool {
+    fn contains(&self, point: &Vector) -> bool {
         if self.button.contains(point) {
             true
         } else if !self.is_concealing() {
@@ -66,7 +65,7 @@ impl<W: Widget> Widget for Concealer<W> {
             false
         }
     }
-    fn is_focusable(&self, location: &Vector2<f32>) -> bool {
+    fn is_focusable(&self, location: &Vector) -> bool {
         if self.is_concealing() {
             false
         } else {
@@ -75,7 +74,7 @@ impl<W: Widget> Widget for Concealer<W> {
                 .unwrap_or(false)
         }
     }
-    fn set_hover(&mut self, location: &Vector2<f32>, hover: bool) {
+    fn set_hover(&mut self, location: &Vector, hover: bool) {
         if self.button.contains(location) {
             self.button.set_hover(location, hover);
         } else if !self.is_concealing() {
@@ -95,7 +94,7 @@ impl<W: Widget> Widget for Concealer<W> {
         }
         Ok(())
     }
-    fn on_click(&mut self, clicked_on: &Vector2<f32>) {
+    fn on_click(&mut self, clicked_on: &Vector) {
         if self.button.contains(clicked_on) {
             self.set_concealing(
                 !self
@@ -111,7 +110,7 @@ impl<W: Widget> Widget for Concealer<W> {
             }
         }
     }
-    fn get_cursor_on_hover(&self, pos: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
+    fn get_cursor_on_hover(&self, pos: &Vector) -> quicksilver::CursorIcon {
         if self.button.contains(pos) {
             self.button.get_cursor_on_hover(pos)
         } else {
@@ -119,16 +118,16 @@ impl<W: Widget> Widget for Concealer<W> {
                 .iter()
                 .find(|v| v.contains(pos))
                 .map(|v| v.get_cursor_on_hover(pos))
-                .unwrap_or(quicksilver::lifecycle::CursorIcon::Default)
+                .unwrap_or(quicksilver::CursorIcon::Default)
         }
     }
 }
 
 impl<W: Widget> Concealer<W> {
-    fn get_widget_at(&self, location: Vector2<f32>) -> Option<&W> {
+    fn get_widget_at(&self, location: Vector) -> Option<&W> {
         self.hidden_widgets.iter().find(|w| w.contains(&location))
     }
-    fn get_mut_widget_at(&mut self, location: Vector2<f32>) -> Option<&mut W> {
+    fn get_mut_widget_at(&mut self, location: Vector) -> Option<&mut W> {
         self.hidden_widgets
             .iter_mut()
             .find(|w| w.contains(&location))

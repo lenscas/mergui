@@ -3,12 +3,8 @@ use crate::{channels::InputChannel, FontStyle};
 use quicksilver::geom::{Rectangle, Shape, Vector};
 use quicksilver::{
     graphics::LayoutGlyph,
-    lifecycle::Window,
-    Result, Timer,
-    {
-        graphics::{Color, Graphics},
-        mint::Vector2,
-    },
+    graphics::{Color, Graphics},
+    Result, Timer, Window,
 };
 
 pub struct PlaceholderConfig {
@@ -176,17 +172,17 @@ impl Input {
 }
 
 impl Widget for Input {
-    fn contains(&self, pos: &Vector2<f32>) -> bool {
+    fn contains(&self, pos: &Vector) -> bool {
         self.config.location.contains((pos.x, pos.y))
     }
-    fn is_focusable(&self, _: &Vector2<f32>) -> bool {
+    fn is_focusable(&self, _: &Vector) -> bool {
         true
     }
     fn render(&mut self, gfx: &mut Graphics, window: &Window) -> Result<()> {
         gfx.stroke_rect(&self.config.location, Color::BLACK);
         self.draw_text(gfx, window)
     }
-    fn set_focus(&mut self, _: &Vector2<f32>, focus: bool) {
+    fn set_focus(&mut self, _: &Vector, focus: bool) {
         if focus {
             self.config.cursor_config.time_off.reset();
             self.config.cursor_config.time_on.reset();
@@ -196,12 +192,12 @@ impl Widget for Input {
         }
         self.has_focus = focus
     }
-    fn get_cursor_on_hover(&self, _: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
-        quicksilver::lifecycle::CursorIcon::Text
+    fn get_cursor_on_hover(&self, _: &Vector) -> quicksilver::CursorIcon {
+        quicksilver::CursorIcon::Text
     }
 
-    fn on_key_press(&mut self, key: quicksilver::lifecycle::Key, state: bool) {
-        use quicksilver::lifecycle::Key::*;
+    fn on_key_press(&mut self, key: quicksilver::input::Key, state: bool) {
+        use quicksilver::input::Key::*;
         if Back == key && state && self.cursor_at_from_left > 0 {
             let current_char_count = self.value.char_count();
             self.value.remove_char_at(self.cursor_at_from_left - 1);
