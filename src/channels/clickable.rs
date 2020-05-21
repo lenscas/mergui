@@ -1,6 +1,7 @@
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 
+
 ///A trait implemented by every channel that registers left clicks
 pub trait Clickable {
     fn has_clicked(&mut self) -> bool;
