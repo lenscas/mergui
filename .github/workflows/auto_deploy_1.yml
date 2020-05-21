@@ -4,7 +4,7 @@ on:
     # Sequence of patterns matched against refs/heads
     branches: |
       master
-      setup-ci
+      setup-ci-2
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
