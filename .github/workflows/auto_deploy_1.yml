@@ -2,9 +2,7 @@ name: Build and Deploy
 on:
   push:
     # Sequence of patterns matched against refs/heads
-    branches: |
-      master
-      setup-ci-2
+    branches: setup-ci-2
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
