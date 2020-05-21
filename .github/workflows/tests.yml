@@ -58,7 +58,6 @@ jobs:
         rust-version: stable
     - uses: actions/checkout@master
     - name: Install dependency
-      if: ubuntu-latest
       run: sudo apt update && sudo apt install libudev-dev
     - name: Install cargo web
       run: cargo install cargo-web
