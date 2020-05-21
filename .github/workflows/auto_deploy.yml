@@ -1,10 +1,10 @@
 name: Build and Deploy
 on:
   push:
-    # Sequence of patterns matched against refs/heads
+    # Sequence of patterns matched against refs/heads. The setup-ci is temporary as a test
     branches: |
       master
-      setup-ci
+      setup-ci 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
