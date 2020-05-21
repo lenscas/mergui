@@ -27,7 +27,6 @@ jobs:
         run: cp -a ./static/. ./target/wasm32-unknown-unknown/release/examples/
       - name: deploy
         uses: peaceiris/actions-gh-pages@v3
-        env:
-          PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PUBLISH_BRANCH: gh-pages
-          PUBLISH_DIR: ./target/wasm32-unknown-unknown/release/examples/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/wasm32-unknown-unknown/release/examples/
