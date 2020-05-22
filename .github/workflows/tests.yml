@@ -62,4 +62,4 @@ jobs:
     - name: Install cargo web
       run: cargo install cargo-web
     - name: Run tests
-      run: cargo web check
+      run: cargo web check --features stdweb
