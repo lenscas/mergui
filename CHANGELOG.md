@@ -3,10 +3,16 @@
 All notable changes to this project are documented in this file.
 
 ## Overview
+- [upcomming](#upcomming)
 - [`0.1.0-alpha0.1`](#0.1.0-alpha0.1)
 - [`0.0.5`](#005)
 - [`0.0.4`](#004)
 - [`0.0.3`](#003)
+
+## upcomming
+- Update to quicksilver 0.4-alpha0.4
+- Replace all Arc<Mutex<T>> with Rc<RefCell<T>>
+- [BREAKING] remove DropDown::values()
 
 ## 0.1.0-alpha0.1
 
