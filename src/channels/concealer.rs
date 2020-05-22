@@ -1,5 +1,5 @@
 use super::{BasicClickable, Clickable};
-use std::sync::{Arc, Mutex};
+use std::{cell::RefCell, rc::Rc};
 
 ///A trait for every channel which can be used to hide/unhide multiple other widgets
 pub trait Concealer<T: PartialEq, R: Sized> {
@@ -18,23 +18,16 @@ pub trait Concealer<T: PartialEq, R: Sized> {
 }
 ///A basic implementation of the Concealer channel. Used by the Concealer widget
 pub struct ConcealerReturn<T: PartialEq, R: Sized> {
-    pub(crate) is_concealing: Arc<Mutex<bool>>,
+    pub(crate) is_concealing: Rc<RefCell<bool>>,
     pub(crate) items: Vec<(T, R)>,
     pub(crate) main_button: BasicClickable,
 }
 impl<T: PartialEq, R: Sized> Concealer<T, R> for ConcealerReturn<T, R> {
     fn set_concealed(&mut self, new_consealed_state: bool) {
-        let locked = self.is_concealing.lock();
-        if let Ok(mut res) = locked {
-            *res = new_consealed_state
-        }
+        self.is_concealing.swap(&RefCell::new(new_consealed_state));
     }
     fn is_concealing(&self) -> bool {
-        let locked = self.is_concealing.lock();
-        match locked {
-            Ok(res) => *(res),
-            Err(x) => *(x.into_inner()),
-        }
+        *self.is_concealing.borrow()
     }
     fn get_item(&self, key: T) -> Option<&R> {
         self.items

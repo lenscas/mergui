@@ -1,5 +1,5 @@
 use super::{Widget, WidgetConfig};
-use crate::{channels::Dropdown as Channel, force_mutex, FontStyle};
+use crate::{channels::Dropdown as Channel, FontStyle};
 use quicksilver::geom::Rectangle;
 use quicksilver::geom::Shape;
 use quicksilver::geom::Vector;
@@ -8,10 +8,7 @@ use quicksilver::graphics::Graphics;
 use quicksilver::graphics::Image;
 use quicksilver::{Result, Window};
 
-use std::{
-    marker::PhantomData,
-    sync::{Arc, Mutex, MutexGuard},
-};
+use std::{cell::RefCell, marker::PhantomData, rc::Rc};
 
 ///used to configure every value that a dropdown contains.
 pub struct DropDownValueConfig<T: Clone> {
@@ -89,9 +86,9 @@ pub struct DropDownConfig<T: Clone, ValueConfig: Into<DropDownValueConfig<T>>> {
 pub struct DropDown<T: Clone> {
     pub location: Rectangle,
     pub option_height: f32,
-    pub values: Arc<Mutex<Vec<DropDownValueConfig<T>>>>,
-    pub is_open: Arc<Mutex<bool>>,
-    pub selected: Arc<Mutex<Option<usize>>>,
+    pub values: Rc<RefCell<Vec<DropDownValueConfig<T>>>>,
+    pub is_open: Rc<RefCell<bool>>,
+    pub selected: Rc<RefCell<Option<usize>>>,
     pub open_button: Image,
     pub open_button_size: Vector,
     pub hover_over: Option<Vector>,
@@ -104,9 +101,9 @@ impl<T: Clone, X: Into<DropDownValueConfig<T>>> WidgetConfig<Channel<T>, DropDow
 {
     fn to_widget(self) -> (DropDown<T>, Channel<T>) {
         let values = self.values.into_iter().map(Into::into).collect();
-        let is_open = Arc::new(Mutex::new(false));
-        let selected = Arc::new(Mutex::new(self.selected));
-        let values = Arc::new(Mutex::new(values));
+        let is_open = Rc::new(RefCell::new(false));
+        let selected = Rc::new(RefCell::new(self.selected));
+        let values = Rc::new(RefCell::new(values));
         let channel = Channel {
             values: values.clone(),
             is_open: is_open.clone(),
@@ -132,17 +129,17 @@ impl<T: Clone, X: Into<DropDownValueConfig<T>>> WidgetConfig<Channel<T>, DropDow
 }
 
 impl<T: Clone> Widget for DropDown<T> {
-    fn contains(&self, point: &Vector) -> bool {
-        self.location.contains(*point)
-            || (self.is_open() && self.get_open_rec().contains(*point))
-            || self.get_location_open_button().contains(*point)
+    fn contains(&self, point: Vector) -> bool {
+        self.location.contains(point)
+            || (self.is_open() && self.get_open_rec().contains(point))
+            || self.get_location_open_button().contains(point)
     }
-    fn is_focusable(&self, _: &Vector) -> bool {
+    fn is_focusable(&self, _: Vector) -> bool {
         true
     }
-    fn set_hover(&mut self, point: &Vector, state: bool) {
+    fn set_hover(&mut self, point: Vector, state: bool) {
         if state {
-            self.hover_over = Some(*point);
+            self.hover_over = Some(point);
         } else {
             self.hover_over = None;
         }
@@ -150,7 +147,7 @@ impl<T: Clone> Widget for DropDown<T> {
     fn render(&mut self, gfx: &mut Graphics, _: &Window) -> Result<()> {
         gfx.draw_image(&self.open_button, self.get_location_open_button());
         self.draw_arround_rec(&self.location, gfx);
-        let values = self.values();
+        let values = self.values.borrow();
         let selected = self
             .selected()
             .and_then(|v| values.get(v))
@@ -170,7 +167,8 @@ impl<T: Clone> Widget for DropDown<T> {
         let hovered = self.hover_over.and_then(|v| self.vector_to_index(v));
 
         if self.is_open() {
-            self.values()
+            self.values
+                .borrow_mut()
                 .iter_mut()
                 .enumerate()
                 .map(|(key, value)| match hovered {
@@ -209,19 +207,21 @@ impl<T: Clone> Widget for DropDown<T> {
         }
         Ok(())
     }
-    fn on_click(&mut self, pos: &Vector) {
-        if let Some(selected) = self.vector_to_index(*pos) {
-            *force_mutex(&self.selected) = Some(selected);
+    fn on_click(&mut self, pos: Vector) {
+        if let Some(selected) = self.vector_to_index(pos) {
+            self.selected.swap(&RefCell::new(Some(selected)));
         }
-        let mut open = force_mutex(&self.is_open);
-        *open = !*open;
+
+        let open = self.is_open.borrow();
+        self.is_open.swap(&RefCell::new(!*open));
     }
-    fn get_cursor_on_hover(&self, _: &Vector) -> quicksilver::CursorIcon {
+    fn get_cursor_on_hover(&self, _: Vector) -> quicksilver::CursorIcon {
         quicksilver::CursorIcon::Hand
     }
-    fn set_focus(&mut self, _: &Vector, focus: bool) {
+    fn set_focus(&mut self, _: Vector, focus: bool) {
         if !focus {
-            *force_mutex(&self.is_open) = focus;
+            let open = self.is_open.borrow();
+            self.is_open.swap(&RefCell::new(!*open));
         }
     }
 }
@@ -234,18 +234,17 @@ impl<T: Clone> DropDown<T> {
     }
     pub fn get_open_rec(&self) -> Rectangle {
         let mut rec = self.location;
-        rec.size.y = self.location.size.y + (self.option_height * self.values().len() as f32);
+        rec.size.y =
+            self.location.size.y + (self.option_height * self.values.borrow().len() as f32);
         rec
     }
     pub fn is_open(&self) -> bool {
-        *force_mutex(&self.is_open)
-    }
-    pub fn values(&self) -> MutexGuard<Vec<DropDownValueConfig<T>>> {
-        force_mutex(&self.values)
+        *self.is_open.borrow()
     }
     pub fn selected(&self) -> Option<usize> {
-        *force_mutex(&self.selected)
+        *self.selected.borrow()
     }
+
     pub fn vector_to_index(&self, point: Vector) -> Option<usize> {
         if !self.is_open() {
             return None;
@@ -254,9 +253,9 @@ impl<T: Clone> DropDown<T> {
         offset.y -= self.location.pos.y + self.location.height();
         let offset = offset;
         if offset.y > 0f32 {
-            let size = self.values().len() as f32 * self.option_height;
-            let selected = (self.values().len() as f32 - ((size - offset.y) / self.option_height))
-                .floor() as usize;
+            let len = self.values.borrow().len();
+            let size = len as f32 * self.option_height;
+            let selected = (len as f32 - ((size - offset.y) / self.option_height)).floor() as usize;
             Some(selected)
         } else {
             None

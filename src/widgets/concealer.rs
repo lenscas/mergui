@@ -4,10 +4,7 @@ use quicksilver::graphics::Graphics;
 use quicksilver::{geom::Vector, Result, Window};
 
 //use quicksilver::prelude::{Vector, Window};
-use std::{
-    marker::PhantomData,
-    sync::{Arc, Mutex},
-};
+use std::{cell::RefCell, marker::PhantomData, rc::Rc};
 ///A button that will hide/unhide other widgets when the user clicks on it
 pub struct ConcealerConfig<T: PartialEq, R: Sized, W: Widget, E: WidgetConfig<R, W>> {
     ///A button that when clicked will hide/unhide the other widgets
@@ -21,7 +18,7 @@ pub struct ConcealerConfig<T: PartialEq, R: Sized, W: Widget, E: WidgetConfig<R,
 pub struct Concealer<W: Widget> {
     pub hidden_widgets: Vec<W>,
     pub button: Button,
-    pub is_concealing: Arc<Mutex<bool>>,
+    pub is_concealing: Rc<RefCell<bool>>,
 }
 
 impl<T: PartialEq, R: Sized, W: Widget, C: WidgetConfig<R, W>>
@@ -40,10 +37,10 @@ impl<T: PartialEq, R: Sized, W: Widget, C: WidgetConfig<R, W>>
         let widgets = widgets;
         let returns = returns;
         let (main_button_widget, main_button_channel) = self.button.to_widget();
-        let is_concealing = Arc::new(Mutex::new(true));
+        let is_concealing = Rc::new(RefCell::new(true));
         (
             Concealer {
-                is_concealing: Arc::clone(&is_concealing),
+                is_concealing: Rc::clone(&is_concealing),
                 hidden_widgets: widgets,
                 button: main_button_widget,
             },
@@ -56,7 +53,7 @@ impl<T: PartialEq, R: Sized, W: Widget, C: WidgetConfig<R, W>>
     }
 }
 impl<W: Widget> Widget for Concealer<W> {
-    fn contains(&self, point: &Vector) -> bool {
+    fn contains(&self, point: Vector) -> bool {
         if self.button.contains(point) {
             true
         } else if !self.is_concealing() {
@@ -65,20 +62,20 @@ impl<W: Widget> Widget for Concealer<W> {
             false
         }
     }
-    fn is_focusable(&self, location: &Vector) -> bool {
+    fn is_focusable(&self, location: Vector) -> bool {
         if self.is_concealing() {
             false
         } else {
-            self.get_widget_at(*location)
+            self.get_widget_at(location)
                 .map(|w| w.is_focusable(location))
                 .unwrap_or(false)
         }
     }
-    fn set_hover(&mut self, location: &Vector, hover: bool) {
+    fn set_hover(&mut self, location: Vector, hover: bool) {
         if self.button.contains(location) {
             self.button.set_hover(location, hover);
         } else if !self.is_concealing() {
-            if let Some(v) = self.get_mut_widget_at(*location) {
+            if let Some(v) = self.get_mut_widget_at(location) {
                 v.set_hover(location, hover)
             }
         }
@@ -94,23 +91,18 @@ impl<W: Widget> Widget for Concealer<W> {
         }
         Ok(())
     }
-    fn on_click(&mut self, clicked_on: &Vector) {
+    fn on_click(&mut self, clicked_on: Vector) {
         if self.button.contains(clicked_on) {
-            self.set_concealing(
-                !self
-                    .is_concealing
-                    .lock()
-                    .map(|v| *v)
-                    .unwrap_or_else(|v| *v.into_inner()),
-            );
+            let current_state = *self.is_concealing.borrow();
+            self.set_concealing(!current_state);
             self.button.on_click(clicked_on);
         } else if !self.is_concealing() {
-            if let Some(widget) = self.get_mut_widget_at(*clicked_on) {
+            if let Some(widget) = self.get_mut_widget_at(clicked_on) {
                 widget.on_click(clicked_on)
             }
         }
     }
-    fn get_cursor_on_hover(&self, pos: &Vector) -> quicksilver::CursorIcon {
+    fn get_cursor_on_hover(&self, pos: Vector) -> quicksilver::CursorIcon {
         if self.button.contains(pos) {
             self.button.get_cursor_on_hover(pos)
         } else {
@@ -125,26 +117,17 @@ impl<W: Widget> Widget for Concealer<W> {
 
 impl<W: Widget> Concealer<W> {
     fn get_widget_at(&self, location: Vector) -> Option<&W> {
-        self.hidden_widgets.iter().find(|w| w.contains(&location))
+        self.hidden_widgets.iter().find(|w| w.contains(location))
     }
     fn get_mut_widget_at(&mut self, location: Vector) -> Option<&mut W> {
         self.hidden_widgets
             .iter_mut()
-            .find(|w| w.contains(&location))
+            .find(|w| w.contains(location))
     }
     fn is_concealing(&self) -> bool {
-        match self.is_concealing.lock() {
-            Ok(x) => *x,
-            Err(x) => *(x.into_inner()),
-        }
+        *self.is_concealing.borrow()
     }
     pub fn set_concealing(&mut self, state: bool) {
-        match self.is_concealing.lock() {
-            Ok(mut x) => *x = state,
-            Err(x) => {
-                let mut x = x.into_inner();
-                *x = state
-            }
-        }
+        self.is_concealing.swap(&RefCell::new(state));
     }
 }

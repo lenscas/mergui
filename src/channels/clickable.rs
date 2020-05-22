@@ -1,7 +1,6 @@
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 
-
 ///A trait implemented by every channel that registers left clicks
 pub trait Clickable {
     fn has_clicked(&mut self) -> bool;
@@ -23,6 +22,7 @@ impl BasicClickable {
         (Self { reader }, writer.into())
     }
 }
+
 ///A simple struct that can be used by widgets to update their channel.
 pub struct ClickSetter(Sender<bool>);
 impl ClickSetter {

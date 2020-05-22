@@ -16,10 +16,10 @@ impl WidgetConfig<(), Image> for Image {
     }
 }
 impl Widget for Image {
-    fn contains(&self, _: &Vector) -> bool {
+    fn contains(&self, _: Vector) -> bool {
         false
     }
-    fn is_focusable(&self, _: &Vector) -> bool {
+    fn is_focusable(&self, _: Vector) -> bool {
         false
     }
     fn render(&mut self, gfx: &mut Graphics, _: &Window) -> Result<()> {

@@ -14,7 +14,7 @@ use std::marker::PhantomData;
 fn main() {
     run(
         Settings {
-            size: Vector::new(800.0, 600.0).into(),
+            size: Vector::new(800.0, 600.0),
             title: "Image Example",
             resizable: true,
             ..Settings::default()
