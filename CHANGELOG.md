@@ -4,6 +4,7 @@ All notable changes to this project are documented in this file.
 
 ## Overview
 - [upcomming](#upcomming)
+- [`0.1.0-alpha0.3`](#0.1.0-alpha0.3)
 - [`0.1.0-alpha0.2`](#0.1.0-alpha0.2)
 - [`0.1.0-alpha0.1`](#0.1.0-alpha0.1)
 - [`0.0.5`](#005)
@@ -11,6 +12,9 @@ All notable changes to this project are documented in this file.
 - [`0.0.3`](#003)
 
 ## upcomming
+
+## 0.1.0-alpha0.3
+- Fix dropdown being totally broken
 
 ## 0.1.0-alpha0.2
 - Update to quicksilver 0.4-alpha0.4
