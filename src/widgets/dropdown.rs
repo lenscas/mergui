@@ -212,16 +212,15 @@ impl<T: Clone> Widget for DropDown<T> {
             self.selected.swap(&RefCell::new(Some(selected)));
         }
 
-        let open = self.is_open.borrow();
-        self.is_open.swap(&RefCell::new(!*open));
+        let open = *self.is_open.borrow();
+        self.is_open.swap(&RefCell::new(!open));
     }
     fn get_cursor_on_hover(&self, _: Vector) -> quicksilver::CursorIcon {
         quicksilver::CursorIcon::Hand
     }
     fn set_focus(&mut self, _: Vector, focus: bool) {
         if !focus {
-            let open = self.is_open.borrow();
-            self.is_open.swap(&RefCell::new(!*open));
+            self.is_open.swap(&RefCell::new(focus));
         }
     }
 }
