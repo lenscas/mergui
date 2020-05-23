@@ -1,0 +1,65 @@
+name: Integration
+on:
+  pull_request:
+    paths:
+      - 'src/**.rs'
+      - 'Cargo.toml'
+      - '.github/workflows/tests.yml'
+jobs:
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: stable
+        components: rustfmt
+    - name: Formatting check
+      run: cargo fmt --all -- --check
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    steps:
+    - uses: hecrj/setup-rust-action@v1.2.0
+      with:
+        rust-version: stable
+    - uses: actions/checkout@master
+    - name: Install dependency
+      if: matrix.os == 'ubuntu-latest'
+      run: sudo apt update && sudo apt install libudev-dev
+    - name: Run tests
+      run: cargo test
+
+  clippy:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: hecrj/setup-rust-action@v1.2.0
+      with:
+        rust-version: stable
+        components: clippy
+    - uses: actions/checkout@master
+    - name: Install dependency
+      if: matrix.os == 'ubuntu-latest'
+      run: sudo apt update && sudo apt install libudev-dev
+    - name: Clippy
+      run: cargo clippy -- -D warnings
+
+  check-cargo-web:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: hecrj/setup-rust-action@v1.2.0
+      with:
+        rust-version: stable
+    - uses: actions/checkout@master
+    - name: Install dependency
+      run: sudo apt update && sudo apt install libudev-dev
+    - name: Install cargo web
+      run: cargo install cargo-web
+    - name: Run tests
+      run: cargo web check --features stdweb

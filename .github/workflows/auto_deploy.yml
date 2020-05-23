@@ -1,0 +1,32 @@
+name: Build and Deploy
+on:
+  push:
+    # Sequence of patterns matched against refs/heads
+    branches: master
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: "hecrj/setup-rust-action@v1"
+        with:
+          rust-version: stable
+      - name: Install the web target
+        run: "rustup target add wasm32-unknown-unknown"
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get install -y libudev-dev zlib1g-dev alsa libasound2-dev
+      - name: Add cargo web
+        run: cargo install cargo-web
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Build
+      # cargo web deploy can not be given an example to build. So, instead we use a build and prepare the rest ourselves.
+        run: cargo web build --release --example all --features stdweb
+      - name: Make ready for deploy
+        run: cp -a ./static/. ./target/wasm32-unknown-unknown/release/examples/
+      - name: deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/wasm32-unknown-unknown/release/examples/

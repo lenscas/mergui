@@ -91,7 +91,7 @@ impl<'a> Context<'a> {
 
     fn get_widgets_mut<'b>(
         widgets: &'b mut IndexMap<u64, Layer<'a>>,
-    ) -> Vec<((u64, u64), &'b mut Box<dyn Widget + 'a>)> {
+    ) -> Vec<((u64, u64), &'b mut (dyn Widget + 'a))> {
         widgets
             .iter_mut()
             .filter(|(_, layer)| layer.is_active)
@@ -101,7 +101,7 @@ impl<'a> Context<'a> {
                     .iter_mut()
                     .map(move |(widget_id, widget)| ((layer_id, widget_id), widget))
             })
-            .map(|(id, widget)| ((*id.0, *id.1), widget))
+            .map(|(id, widget)| ((*id.0, *id.1), widget.as_mut()))
             .collect()
     }
     fn handle_extern_events(&mut self) {
@@ -147,13 +147,13 @@ impl<'a> Context<'a> {
         use quicksilver::input::Event::*;
         match event {
             PointerMoved(val) => {
-                let cursor_location = &self.mouse_cursor;
+                let cursor_location = self.mouse_cursor;
                 let val = val.location();
                 let mut widgets = Context::get_widgets_mut(&mut self.to_display);
                 let mut widgets = widgets
                     .iter_mut()
                     .filter_map(|(_, widget)| {
-                        let does_hover = widget.contains(&val);
+                        let does_hover = widget.contains(val);
                         if does_hover {
                             Some(widget)
                         } else {
@@ -196,7 +196,7 @@ impl<'a> Context<'a> {
                     //so.. instead lets do nothing....
                     (false, false) => return,
                 }
-                let cursor = &self.mouse_cursor;
+                let cursor = self.mouse_cursor;
                 let mut widgets = Context::get_widgets_mut(&mut self.to_display);
                 let mut maybe_focused_widgets: Vec<_> = widgets
                     .iter_mut()
@@ -211,7 +211,7 @@ impl<'a> Context<'a> {
                         }
                     })
                     .collect();
-                let cursor = &self.mouse_cursor;
+                let cursor = self.mouse_cursor;
                 let current_focused_id = self.widget_with_focus;
                 self.widget_with_focus =
                     maybe_focused_widgets

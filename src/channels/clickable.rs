@@ -22,6 +22,7 @@ impl BasicClickable {
         (Self { reader }, writer.into())
     }
 }
+
 ///A simple struct that can be used by widgets to update their channel.
 pub struct ClickSetter(Sender<bool>);
 impl ClickSetter {

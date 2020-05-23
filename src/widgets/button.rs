@@ -62,13 +62,13 @@ impl WidgetConfig<Clickable, Button> for ButtonConfig {
 }
 
 impl Widget for Button {
-    fn contains(&self, point: &Vector) -> bool {
+    fn contains(&self, point: Vector) -> bool {
         self.background.contains(point) || self.text.contains(point)
     }
-    fn is_focusable(&self, _: &Vector) -> bool {
+    fn is_focusable(&self, _: Vector) -> bool {
         false
     }
-    fn set_hover(&mut self, _: &Vector, hover: bool) {
+    fn set_hover(&mut self, _: Vector, hover: bool) {
         self.background.is_hovering = hover;
     }
     fn render(&mut self, gfx: &mut Graphics, w: &Window) -> Result<()> {
@@ -76,10 +76,10 @@ impl Widget for Button {
         self.text.render(gfx, w)?;
         Ok(())
     }
-    fn on_click(&mut self, _: &Vector) {
+    fn on_click(&mut self, _: Vector) {
         self.channel.clicked();
     }
-    fn get_cursor_on_hover(&self, _: &Vector) -> quicksilver::CursorIcon {
+    fn get_cursor_on_hover(&self, _: Vector) -> quicksilver::CursorIcon {
         quicksilver::CursorIcon::Hand
     }
 }

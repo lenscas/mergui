@@ -53,7 +53,7 @@ pub struct Input {
 
 impl WidgetConfig<InputChannel, Input> for InputConfig {
     fn to_widget(self) -> (Input, InputChannel) {
-        let value = self.start_value.clone().unwrap_or("".into()).into();
+        let value = self.start_value.clone().unwrap_or_else(|| "".into()).into();
         (
             Input {
                 config: self,
@@ -172,17 +172,17 @@ impl Input {
 }
 
 impl Widget for Input {
-    fn contains(&self, pos: &Vector) -> bool {
+    fn contains(&self, pos: Vector) -> bool {
         self.config.location.contains((pos.x, pos.y))
     }
-    fn is_focusable(&self, _: &Vector) -> bool {
+    fn is_focusable(&self, _: Vector) -> bool {
         true
     }
     fn render(&mut self, gfx: &mut Graphics, window: &Window) -> Result<()> {
         gfx.stroke_rect(&self.config.location, Color::BLACK);
         self.draw_text(gfx, window)
     }
-    fn set_focus(&mut self, _: &Vector, focus: bool) {
+    fn set_focus(&mut self, _: Vector, focus: bool) {
         if focus {
             self.config.cursor_config.time_off.reset();
             self.config.cursor_config.time_on.reset();
@@ -192,7 +192,7 @@ impl Widget for Input {
         }
         self.has_focus = focus
     }
-    fn get_cursor_on_hover(&self, _: &Vector) -> quicksilver::CursorIcon {
+    fn get_cursor_on_hover(&self, _: Vector) -> quicksilver::CursorIcon {
         quicksilver::CursorIcon::Text
     }
 
