@@ -279,7 +279,7 @@ impl<'a> Context<'a> {
                 let (widget, res) = widget.to_widget();
                 Ok(Response {
                     channel: res,
-                    id: WidgetId::new(
+                    _id: WidgetId::new(
                         layer_id.id,
                         layer.insert(Box::new(widget)),
                         self.widget_channel_creator.clone(),

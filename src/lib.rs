@@ -14,14 +14,17 @@ use quicksilver::graphics::Color;
 use quicksilver::graphics::Graphics;
 use quicksilver::graphics::{FontRenderer, LayoutGlyph, VectorFont};
 use quicksilver::Result;
+use responses::WidgetId;
 pub(crate) use responses::{
     LayerChannelReceiver, LayerChannelSender, LayerInstructions, LayerNummerId,
     WidgetChannelReceiver, WidgetChannelSender, WidgetInstruction, WidgetNummerId,
 };
-pub use responses::{LayerId, Response, WidgetId};
+pub use responses::{LayerId, Response};
 use std::cell::RefCell;
 use std::rc::Rc;
 
+///A wrapper arround FontRenderer. It is used because quicksilvers FontRenderer can't be cloned
+///and widgets need ownership of the FontRenderer.
 #[derive(Clone)]
 pub struct MFont {
     pub(crate) renderer: Rc<RefCell<FontRenderer>>,
@@ -29,10 +32,12 @@ pub struct MFont {
 }
 
 impl MFont {
+    ///load the given vector font and turn it into a MFont. It uses VectorFont::load() internally
     pub async fn load_ttf(gfx: &Graphics, path: &'static str, size: f32) -> Result<MFont> {
         Self::from_font(&VectorFont::load(path).await?, gfx, size)
     }
 
+    ///used to turn a &VectorFont into an MFont
     pub fn from_font(font: &VectorFont, gfx: &Graphics, font_size: f32) -> Result<MFont> {
         Ok(MFont {
             renderer: Rc::new(RefCell::new(font.to_renderer(gfx, font_size)?)),
@@ -40,6 +45,7 @@ impl MFont {
         })
     }
 
+    //similair to FontRenderer::layout_glyphs
     pub fn layout_glyphs(
         &self,
         gfx: &mut Graphics,
@@ -52,6 +58,7 @@ impl MFont {
             .layout_glyphs(gfx, text, max_width, callback)
     }
 
+    ///similair to FontRenderer::draw
     pub fn draw(
         &self,
         gfx: &mut Graphics,
@@ -71,6 +78,7 @@ pub struct FontStyle {
     pub color: Color,
 }
 impl FontStyle {
+    ///draw some text using this FontStyle
     fn draw(&self, gfx: &mut Graphics, text: &str) -> Result<Vector> {
         let mut renderer = self.font.renderer.borrow_mut();
         renderer.draw(gfx, text, self.color, self.location)

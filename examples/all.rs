@@ -1,4 +1,10 @@
 //This example goes over every widget and shows how to construct it.
+//some widgets are not shown here. This is because they are either:
+//Broken since the move to quicksilver 0.4: core::TextButton
+//don't have much new to add in how they are used: core::TextButton, core::ImageButton
+//are a wrapper over an already shown widgets: ConcealerManager.
+
+//there is a short explanation at the end of this file to explain what they do though.
 
 use mergui::widgets::{input::InputConfig, ButtonConfig, ConcealerConfig, DropDownConfig};
 
@@ -8,7 +14,7 @@ use quicksilver::{
     Result, Timer, {run, Input, Settings, Window},
 };
 
-use mergui::{channels::Clickable, core::Text, Context, FontStyle, MFont};
+use mergui::{core::Text, Context, FontStyle, MFont};
 use std::marker::PhantomData;
 
 fn main() {
@@ -202,3 +208,9 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
         }
     }
 }
+
+//as for the earlier mentioned widgets that didn't make it into the example
+//core::image_button. It is the image side of a widgets::Button.
+//core::text_button. It is the text side of a widgets::Button.
+
+//widgets::ConcealerManager. This is a wrapper over a group of concealers. It makes sure that there is at most 1 active at any given time.

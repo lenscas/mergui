@@ -21,6 +21,10 @@ impl BasicClickable {
         let (writer, reader): (Sender<bool>, Receiver<bool>) = mpsc::channel();
         (Self { reader }, writer.into())
     }
+    ///Returns true if the user clicked on the widget since the last time this function got called.
+    pub fn has_clicked(&mut self) -> bool {
+        <Self as Clickable>::has_clicked(self)
+    }
 }
 
 ///A simple struct that can be used by widgets to update their channel.

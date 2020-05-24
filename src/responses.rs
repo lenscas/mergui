@@ -3,8 +3,7 @@ use std::sync::mpsc::{Receiver, Sender};
 pub struct Response<R> {
     ///This is used to comunicate with the widget
     pub channel: R,
-    ///This is the id of the widget, allowing you to remove it from the context
-    pub id: WidgetId,
+    pub(crate) _id: WidgetId,
 }
 
 pub(crate) type LayerNummerId = u64;
@@ -24,6 +23,8 @@ pub(crate) enum WidgetInstruction {
     Drop,
 }
 
+///Used to keep set to which layer a widget belongs to.
+///Dropping this causes every widget in this layer to be removed.
 pub struct LayerId {
     pub(crate) id: LayerNummerId,
     channel: LayerChannelSender,
@@ -46,7 +47,7 @@ impl Drop for LayerId {
         let _ = self.channel.send((self.id, LayerInstructions::Drop));
     }
 }
-pub struct WidgetId {
+pub(crate) struct WidgetId {
     pub(crate) id: WidgetNummerId,
     pub(crate) layer: LayerNummerId,
     channel: WidgetChannelSender,

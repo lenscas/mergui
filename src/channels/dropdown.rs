@@ -8,12 +8,14 @@ pub struct Dropdown<T: Clone> {
 }
 
 impl<T: Clone> Dropdown<T> {
+    ///get the current selected value
     pub fn get_value(&self) -> Option<T> {
         let selected = self.selected.borrow();
         let selected = selected.as_ref()?;
         let v = &self.values.borrow();
         v.get(*selected).map(|value| value.value.clone())
     }
+    ///get if the dropdown is currently open
     pub fn is_open(&self) -> bool {
         *self.is_open.borrow()
     }
