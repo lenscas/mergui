@@ -12,7 +12,7 @@ All notable changes to this project are documented in this file.
 - [`0.0.3`](#003)
 
 ## upcomming
-
+- Improve the `all` example
 ## 0.1.0-alpha0.3
 - Fix dropdown being totally broken
 

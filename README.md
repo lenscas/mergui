@@ -20,8 +20,8 @@ After I did the same for Arena keeper and discovered problems with mine I decide
 There are multiple widgets. The 3 most important ones are
  - Button.
  - Dropdown
- - Text input field. 
+ - Text input field.
 
-There is also a concealer, which is a button that when clicked either hides or shows multiple widgets.
+For a complete list and how to use them, see [examples/all.rs](examples/all.rs).
+You can also see this example in action [here](https://lenscas.github.io/mergui/)
 
-For a complete list and how to use them, look at /examples/all.rs. As that file contains a simple scene with every widget implemented.
