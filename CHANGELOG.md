@@ -13,6 +13,7 @@ All notable changes to this project are documented in this file.
 
 ## upcomming
 - Improve the `all` example
+- [BREAKING] Remove WidgetId from public interface. There was no reason for it to be public
 ## 0.1.0-alpha0.3
 - Fix dropdown being totally broken
 
