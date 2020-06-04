@@ -155,11 +155,11 @@ impl Input {
         if self.cursor_is_visible {
             gfx.fill_rect(
                 &Rectangle::new(
-                    (
+                    Vector::new(
                         self.config.location.pos.x + size_before_cursor,
                         self.config.location.pos.y,
                     ),
-                    (
+                    Vector::new(
                         self.config.cursor_config.thickness,
                         self.config.location.size.y,
                     ),
@@ -173,7 +173,7 @@ impl Input {
 
 impl Widget for Input {
     fn contains(&self, pos: Vector) -> bool {
-        self.config.location.contains((pos.x, pos.y))
+        self.config.location.contains(Vector::new(pos.x, pos.y))
     }
     fn is_focusable(&self, _: Vector) -> bool {
         true

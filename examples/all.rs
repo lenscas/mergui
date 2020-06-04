@@ -20,7 +20,7 @@ use std::marker::PhantomData;
 fn main() {
     run(
         Settings {
-            size: Vector::new(1366, 768),
+            size: Vector::new(1366., 768.),
             title: "Every widget",
             resizable: false,
             ..Settings::default()
@@ -40,7 +40,7 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
     //now, we make a font style, which tells our widgets how the text should be drawn.
     let basic_font_style = FontStyle {
         font: font.clone(),
-        location: Vector::new(100, 20),
+        location: Vector::new(100., 20.),
         color: Color::BLACK,
     };
 
@@ -52,7 +52,7 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
     //4: Decide which widget gets which events (if any).
 
     //at this point in time, we don't have access to the location of the cursor. Setting it to 0,0 is however good enough for now.
-    let mut context = Context::new((0, 0).into());
+    let mut context = Context::new((0., 0.).into());
 
     //we then construct a layer. A layer is used to group and control multiple widgets together.
     //You probably want 1 layer per screen/menu.
@@ -77,12 +77,12 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
     //now, time for the first interactable widget. A button!
     let conf = ButtonConfig {
         background: button.clone(), //the image for the button
-        background_location: Rectangle::new((100, 50), (100, 50)), //where we need to draw it
+        background_location: Rectangle::new(Vector::new(100., 50.), Vector::new(100., 50.)), //where we need to draw it
         blend_color: Some(Color::GREEN), //used to blend a color to the button when it gets drawn
         hover_color: Some(Color::RED), //used to blend a color to the butten when it gets drawn while the mouse is hovering over it
         font_style: FontStyle {
             font: font.clone(),
-            location: Vector::new(20, 30), //The font location is relative to the location given to background_location
+            location: Vector::new(20., 30.), //The font location is relative to the location given to background_location
             color: Color::WHITE,
         },
         text: "A Button".into(), //the text
@@ -97,12 +97,12 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
     let conf = ConcealerConfig {
         button: ButtonConfig {
             background: button.clone(),
-            background_location: Rectangle::new((100, 105), (100, 50)),
+            background_location: Rectangle::new(Vector::new(100., 105.), Vector::new(100., 50.)),
             blend_color: Some(Color::GREEN),
             hover_color: Some(Color::RED),
             font_style: FontStyle {
                 font: font.clone(),
-                location: Vector::new(15, 30),
+                location: Vector::new(15., 30.),
                 color: Color::WHITE,
             },
             text: "Concealer".into(),
@@ -111,12 +111,15 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
             0,
             ButtonConfig {
                 background: button.clone(),
-                background_location: Rectangle::new((210, 105), (100, 50)),
+                background_location: Rectangle::new(
+                    Vector::new(210., 105.),
+                    Vector::new(100., 50.),
+                ),
                 blend_color: Some(Color::GREEN),
                 hover_color: Some(Color::RED),
                 font_style: FontStyle {
                     font: font.clone(),
-                    location: Vector::new(15, 30),
+                    location: Vector::new(15., 30.),
                     color: Color::WHITE,
                 },
                 text: "Hidden".into(),
@@ -134,7 +137,7 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
             ..basic_font_style.clone()
         },
         placeholder: None,
-        location: Rectangle::new((100, 160), (260, 50)),
+        location: Rectangle::new(Vector::new(100., 160.), Vector::new(260., 50.)),
         start_value: Some(String::from("Text box")),
         cursor_config: Default::default(),
     };
@@ -147,7 +150,7 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
                 "Dropdown",
                 FontStyle {
                     font: MFont::from_font(&base_font, &gfx, 30.0)?,
-                    location: Vector::new(10, 55),
+                    location: Vector::new(10., 55.),
                     ..basic_font_style.clone()
                 },
             ),
@@ -155,12 +158,12 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
                 "Second",
                 FontStyle {
                     font: MFont::from_font(&base_font, &gfx, 35.0)?,
-                    location: Vector::new(15, 55),
+                    location: Vector::new(15., 55.),
                     ..basic_font_style.clone()
                 },
             ),
         ],
-        location: Rectangle::new((100, 215), (160, 50)),
+        location: Rectangle::new(Vector::new(100., 215.), Vector::new(160., 50.)),
         option_height: 50.0,
         open_button: button.clone(),
         open_button_size: (100.0, 50.0).into(),
