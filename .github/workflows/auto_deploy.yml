@@ -2,7 +2,14 @@ name: Build and Deploy
 on:
   push:
     # Sequence of patterns matched against refs/heads
-    branches: master
+    branches:
+      - master
+    paths:
+      - "src/**.rs"
+      - "Cargo.toml"
+      - ".github/workflows/auto_deploy.yml"
+      - "static/*"
+      - "examples/all.rs"
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -21,7 +28,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
       - name: Build
-      # cargo web deploy can not be given an example to build. So, instead we use a build and prepare the rest ourselves.
+        # cargo web deploy can not be given an example to build. So, instead we use a build and prepare the rest ourselves.
         run: cargo web build --release --example all --features stdweb
       - name: Make ready for deploy
         run: cp -a ./static/. ./target/wasm32-unknown-unknown/release/examples/
