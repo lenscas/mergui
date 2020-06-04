@@ -3,7 +3,9 @@
 All notable changes to this project are documented in this file.
 
 ## Overview
+
 - [upcomming](#upcomming)
+- [`0.1.0-alpha0.3`](#0.1.0-alpha0.4)
 - [`0.1.0-alpha0.3`](#0.1.0-alpha0.3)
 - [`0.1.0-alpha0.2`](#0.1.0-alpha0.2)
 - [`0.1.0-alpha0.1`](#0.1.0-alpha0.1)
@@ -12,12 +14,18 @@ All notable changes to this project are documented in this file.
 - [`0.0.3`](#003)
 
 ## upcomming
+
+## 0.1.0-alpha0.4
+
 - Improve the `all` example
 - [BREAKING] Remove WidgetId from public interface. There was no reason for it to be public
+
 ## 0.1.0-alpha0.3
+
 - Fix dropdown being totally broken
 
 ## 0.1.0-alpha0.2
+
 - Update to quicksilver 0.4-alpha0.4
 - Replace all Arc<Mutex<T>> with Rc<RefCell<T>>
 - [BREAKING] remove DropDown::values()
