@@ -44,6 +44,8 @@ impl LayerId {
         self.layer.as_ref().id
     }
 
+    ///Set a layer to active or inactive.
+    ///Layers that are inactive won't be rendered or receive updates.
     pub fn set_is_active(&self, is_active: bool) {
         self.layer.as_ref().set_is_active(is_active)
     }
@@ -58,8 +60,6 @@ impl InternalLayerId {
         Self { id, channel }
     }
 
-    ///Set a layer to active or inactive.
-    ///Layers that are inactive won't be rendered or receive updates.
     pub fn set_is_active(&self, is_active: bool) {
         let _ = self
             .channel
