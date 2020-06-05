@@ -90,9 +90,27 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
     //in order to explain how to work with responses we are going to make it so the background changes color whenever you click the button
     let mut button_response = layer.add_widget(conf);
 
-    //The next widget is a concealer. This is a widget that automatically hides/shows a list of widgets whenever it gets clicked.
-    //A good use for it could be a collapsible menu.
-    //In this case, we simply render another button .
+    //The next widget is a concealer. This is a widget that hides/shows a layer if the user clicks on the button.
+    //An example for its use could be a collapseable menu
+    //first, make a singular layer. These are almost the same as regular layers
+    //except that they don't allow you to clone them nor do they allow you to change their visibility
+    //concealers make use of these as they want complete control over the layer.
+    let mut concealed_layer = context.add_singular_layer();
+
+    //now, time to add our widgets to this layer. We can also do this later using the returned channel
+    let _hidden_button = concealed_layer.add_widget(ButtonConfig {
+        background: button.clone(),
+        background_location: Rectangle::new(Vector::new(210., 105.), Vector::new(100., 50.)),
+        blend_color: Some(Color::GREEN),
+        hover_color: Some(Color::RED),
+        font_style: FontStyle {
+            font: font.clone(),
+            location: Vector::new(15., 30.),
+            color: Color::WHITE,
+        },
+        text: "Hidden".into(),
+    });
+
     let conf = ConcealerConfig {
         button: ButtonConfig {
             background: button.clone(),
@@ -106,26 +124,7 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
             },
             text: "Concealer".into(),
         },
-        hidden_widgets: vec![(
-            0,
-            ButtonConfig {
-                background: button.clone(),
-                background_location: Rectangle::new(
-                    Vector::new(210., 105.),
-                    Vector::new(100., 50.),
-                ),
-                blend_color: Some(Color::GREEN),
-                hover_color: Some(Color::RED),
-                font_style: FontStyle {
-                    font: font.clone(),
-                    location: Vector::new(15., 30.),
-                    color: Color::WHITE,
-                },
-                text: "Hidden".into(),
-            },
-        )],
-        to_widget: PhantomData,
-        to_result: PhantomData,
+        layer: concealed_layer,
     };
     let _concealer = layer.add_widget(conf);
 

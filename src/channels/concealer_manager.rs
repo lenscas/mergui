@@ -1,13 +1,14 @@
 use super::{BasicClickable, ConcealerReturn};
+use crate::SingularLayerId;
 use std::{cell::RefCell, rc::Rc};
 
-pub struct ConcealerManagerReturn<T: PartialEq, R: Sized> {
-    channels: Vec<ConcealerReturn<T, R>>,
+pub struct ConcealerManagerReturn {
+    channels: Vec<ConcealerReturn>,
     shown: Rc<RefCell<Option<usize>>>,
 }
 
-impl<T: PartialEq, R: Sized> ConcealerManagerReturn<T, R> {
-    pub fn new(channels: Vec<ConcealerReturn<T, R>>, shown: Rc<RefCell<Option<usize>>>) -> Self {
+impl ConcealerManagerReturn {
+    pub fn new(channels: Vec<ConcealerReturn>, shown: Rc<RefCell<Option<usize>>>) -> Self {
         Self { channels, shown }
     }
     ///set which concealer is active (if any)
@@ -18,13 +19,24 @@ impl<T: PartialEq, R: Sized> ConcealerManagerReturn<T, R> {
     pub fn get_current_active(&self) -> Option<usize> {
         *self.shown.borrow()
     }
-    ///get an iterator over every channel
-    pub fn iter<'a>(&'a self) -> Box<dyn Iterator<Item = &'a Vec<(T, R)>> + 'a> {
-        Box::new(self.channels.iter().map(|v| &v.items))
+
+    ///Gets a specific layer. Usefull for if you want to interact with the layers
+    pub fn get_layer(&self, id: usize) -> Option<&SingularLayerId> {
+        self.channels.get(id).map(|v| &v.layer)
     }
-    ///get a muteable iterator over every channel
-    pub fn iter_mut<'a>(&'a mut self) -> Box<dyn Iterator<Item = &'a mut Vec<(T, R)>> + 'a> {
-        Box::new(self.channels.iter_mut().map(|v| &mut v.items))
+
+    ///Gets a specific layer as a mutable reference. Usefull for if you want to interact with the layers
+    pub fn get_layer_mut(&mut self, id: usize) -> Option<&mut SingularLayerId> {
+        self.channels.get_mut(id).map(|v| &mut v.layer)
+    }
+
+    ///get an iterator over every layer
+    pub fn iter(&self) -> Box<dyn Iterator<Item = &SingularLayerId> + '_> {
+        Box::new(self.channels.iter().map(|v| &v.layer))
+    }
+    ///get a muteable iterator over every layer
+    pub fn iter_mut(&mut self) -> Box<dyn Iterator<Item = &mut SingularLayerId> + '_> {
+        Box::new(self.channels.iter_mut().map(|v| &mut v.layer))
     }
     ///get an iterator over every button
     pub fn buttons_iter<'a>(&'a self) -> Box<dyn Iterator<Item = &'a BasicClickable> + 'a> {

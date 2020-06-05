@@ -1,7 +1,7 @@
 use crate::{
     widgets::{Widget, WidgetConfig},
     LayerChannelReceiver, LayerChannelSender, LayerId, LayerInstructions, LayerNummerId, Response,
-    WidgetChannelReceiver, WidgetChannelSender, WidgetId, WidgetNummerId,
+    SingularLayerId, WidgetChannelReceiver, WidgetChannelSender, WidgetId, WidgetNummerId,
 };
 use indexmap::IndexMap;
 use quicksilver::{
@@ -79,6 +79,15 @@ impl Context {
             left_mouse_button_down: false,
         }
     }
+
+    ///same as Context::add_layer but it gives you a layer back that can't be cloned.
+    ///These are used by widgets that want to take control of an entire layer
+    ///An example is Widgets::Concealer
+    pub fn add_singular_layer(&mut self) -> SingularLayerId {
+        let layer_id = self.add_layer();
+        SingularLayerId { 0: layer_id }
+    }
+
     ///Adds a layer that can hold multiple widgets.
     ///Usefull to group widgets together that need to be removed at the same time
     pub fn add_layer(&mut self) -> LayerId {
