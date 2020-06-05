@@ -7,12 +7,12 @@ use indexmap::IndexMap;
 use quicksilver::{
     geom::Vector, graphics::Graphics, input::MouseButton, Result as QuickResult, Window,
 };
-use std::sync::mpsc;
+use std::{cell::RefCell, rc::Rc, sync::mpsc};
 
 struct Layer {
-    is_active: bool,
+    is_active: Rc<RefCell<bool>>,
     widgets: IndexMap<WidgetNummerId, Box<dyn Widget + 'static>>,
-    current_id: LayerNummerId,
+    current_id: Rc<RefCell<LayerNummerId>>,
 }
 impl Default for Layer {
     fn default() -> Self {
@@ -22,9 +22,9 @@ impl Default for Layer {
 impl Layer {
     pub fn new() -> Self {
         Self {
-            is_active: true,
+            is_active: Rc::new(RefCell::new(true)),
             widgets: Default::default(),
-            current_id: 0,
+            current_id: Rc::new(RefCell::new(0)),
         }
     }
     pub fn get_mut(&mut self, index: u64) -> Option<&mut (dyn Widget + 'static)> {
@@ -34,9 +34,13 @@ impl Layer {
         self.widgets.remove(&index);
     }
     pub fn insert(&mut self, widget: Box<dyn Widget + 'static>) -> u64 {
-        self.current_id += 1;
-        self.widgets.insert(self.current_id, widget);
-        self.current_id
+        let mut id = self.current_id.borrow_mut();
+        *id += 1;
+        self.widgets.insert(*id, widget);
+        *id
+    }
+    pub(crate) fn is_active(&self) -> bool {
+        *self.is_active.borrow()
     }
 }
 
@@ -79,10 +83,16 @@ impl Context {
     ///Usefull to group widgets together that need to be removed at the same time
     pub fn add_layer(&mut self) -> LayerId {
         self.last_layer_id += 1;
-        self.to_display
-            .insert(self.last_layer_id, Default::default());
-
-        LayerId::new(self.last_layer_id, self.layer_channel_creator.clone())
+        let layer = Layer::new();
+        let id = LayerId::new(
+            self.last_layer_id,
+            self.layer_channel_creator.clone(),
+            layer.is_active.clone(),
+            layer.current_id.clone(),
+            self.widget_channel_creator.clone(),
+        );
+        self.to_display.insert(self.last_layer_id, layer);
+        id
     }
 
     fn get_focused_widget(&mut self) -> Option<&mut (dyn Widget + 'static)> {
@@ -95,7 +105,7 @@ impl Context {
     ) -> Vec<((u64, u64), &'b mut (dyn Widget + 'static))> {
         widgets
             .iter_mut()
-            .filter(|(_, layer)| layer.is_active)
+            .filter(|(_, layer)| layer.is_active())
             .flat_map(|(layer_id, layer)| {
                 layer
                     .widgets
@@ -134,9 +144,9 @@ impl Context {
                 LayerInstructions::Drop => {
                     self.to_display.remove(&id);
                 }
-                LayerInstructions::SetIsActive(state) => {
-                    if let Some(v) = self.to_display.get_mut(&id) {
-                        v.is_active = state
+                LayerInstructions::AddWidget(widget, widget_id) => {
+                    if let Some(layer) = self.to_display.get_mut(&id) {
+                        layer.widgets.insert(widget_id, widget);
                     }
                 }
             }
@@ -264,7 +274,8 @@ impl Context {
     ///
     ///Returns an Error if the layer does not exist.
     ///
-    /// Otherwise, returns both the id of the widget AND a channel to comunicate with it.
+    ///Otherwise, returns a channel to comunicate with the new widget.
+    ///Note: You can also add a widget using LayerId::add_widget.
     pub fn add_widget<R, W, Res>(
         &mut self,
         widget: R,
