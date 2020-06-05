@@ -1,9 +1,13 @@
-use std::sync::mpsc::{Receiver, Sender};
+use std::{
+    rc::Rc,
+    sync::mpsc::{Receiver, Sender},
+};
 /// This is the struct that gets returned when a widget is added to the context.
 pub struct Response<R> {
     ///This is used to comunicate with the widget
     pub channel: R,
     pub(crate) _id: WidgetId,
+    pub(crate) _layer_id: LayerId,
 }
 
 pub(crate) type LayerNummerId = u64;
@@ -23,13 +27,33 @@ pub(crate) enum WidgetInstruction {
     Drop,
 }
 
-///Used to keep set to which layer a widget belongs to.
-///Dropping this causes every widget in this layer to be removed.
+///Used to create widgets at a layer.
+///Once this and every widget on this layer are dropped, so is the internal layer.
+#[derive(Clone)]
 pub struct LayerId {
+    layer: Rc<InternalLayerId>,
+}
+
+impl LayerId {
+    pub(crate) fn new(id: LayerNummerId, channel: LayerChannelSender) -> Self {
+        let layer = Rc::new(InternalLayerId::new(id, channel));
+        Self { layer }
+    }
+
+    pub(crate) fn id(&self) -> LayerNummerId {
+        self.layer.as_ref().id
+    }
+
+    pub fn set_is_active(&self, is_active: bool) {
+        self.layer.as_ref().set_is_active(is_active)
+    }
+}
+pub(crate) struct InternalLayerId {
     pub(crate) id: LayerNummerId,
     channel: LayerChannelSender,
 }
-impl LayerId {
+
+impl InternalLayerId {
     pub(crate) fn new(id: LayerNummerId, channel: LayerChannelSender) -> Self {
         Self { id, channel }
     }
@@ -42,7 +66,7 @@ impl LayerId {
             .send((self.id, LayerInstructions::SetIsActive(is_active)));
     }
 }
-impl Drop for LayerId {
+impl Drop for InternalLayerId {
     fn drop(&mut self) {
         let _ = self.channel.send((self.id, LayerInstructions::Drop));
     }
