@@ -4,10 +4,9 @@ use crate::{
     WidgetChannelReceiver, WidgetChannelSender, WidgetId, WidgetNummerId,
 };
 use indexmap::IndexMap;
-use quicksilver::graphics::Graphics;
-use quicksilver::input::MouseButton;
-use quicksilver::Result as QuickResult;
-use quicksilver::{geom::Vector, Window};
+use quicksilver::{
+    geom::Vector, graphics::Graphics, input::MouseButton, Result as QuickResult, Window,
+};
 use std::sync::mpsc;
 
 struct Layer {
