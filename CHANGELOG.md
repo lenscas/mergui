@@ -17,6 +17,7 @@ All notable changes to this project are documented in this file.
 
 - [BREAKING] dropping the LayerId does not cause the layer to be removed. Only if the layer is also empty does that happen now.
 - [BREAKING] LayerId is now !Send.
+- Remove unesesary lifetime parameter in Context.
 - Implement clone for LayerId.
 
 ## 0.1.0-alpha0.4

@@ -10,17 +10,17 @@ use quicksilver::Result as QuickResult;
 use quicksilver::{geom::Vector, Window};
 use std::sync::mpsc;
 
-struct Layer<'a> {
+struct Layer {
     is_active: bool,
-    widgets: IndexMap<WidgetNummerId, Box<dyn Widget + 'a>>,
+    widgets: IndexMap<WidgetNummerId, Box<dyn Widget + 'static>>,
     current_id: LayerNummerId,
 }
-impl<'a> Default for Layer<'a> {
+impl Default for Layer {
     fn default() -> Self {
         Self::new()
     }
 }
-impl<'a> Layer<'a> {
+impl Layer {
     pub fn new() -> Self {
         Self {
             is_active: true,
@@ -28,26 +28,22 @@ impl<'a> Layer<'a> {
             current_id: 0,
         }
     }
-    pub fn get_mut(&mut self, index: u64) -> Option<&mut (dyn Widget + 'a)> {
+    pub fn get_mut(&mut self, index: u64) -> Option<&mut (dyn Widget + 'static)> {
         self.widgets.get_mut(&index).map(|v| v.as_mut())
     }
     pub fn remove(&mut self, index: u64) {
         self.widgets.remove(&index);
     }
-    pub fn insert(&mut self, widget: Box<dyn Widget + 'a>) -> u64 {
+    pub fn insert(&mut self, widget: Box<dyn Widget + 'static>) -> u64 {
         self.current_id += 1;
         self.widgets.insert(self.current_id, widget);
         self.current_id
     }
 }
-/*
-///Used by widgets to get the image they need to render.
-pub trait Assets {
-    fn get_image(&self, name: &str) -> &Image;
-}*/
+
 ///This manages the GUI. It contains every widget that needs to be drawn and makes sure they are updated properly
-pub struct Context<'a> {
-    to_display: IndexMap<LayerNummerId, Layer<'a>>,
+pub struct Context {
+    to_display: IndexMap<LayerNummerId, Layer>,
     widget_with_focus: Option<(u64, u64)>,
     last_layer_id: u64,
     mouse_cursor: Vector,
@@ -58,7 +54,7 @@ pub struct Context<'a> {
     left_mouse_button_down: bool,
 }
 
-impl<'a> Context<'a> {
+impl Context {
     pub fn new(cursor: Vector) -> Self {
         let (layer_send, layer_rec) = mpsc::channel();
         let (widget_send, widget_rec) = mpsc::channel();
@@ -84,14 +80,14 @@ impl<'a> Context<'a> {
         LayerId::new(self.last_layer_id, self.layer_channel_creator.clone())
     }
 
-    fn get_focused_widget(&mut self) -> Option<&mut (dyn Widget + 'a)> {
+    fn get_focused_widget(&mut self) -> Option<&mut (dyn Widget + 'static)> {
         self.widget_with_focus
             .and_then(move |v| self.to_display.get_mut(&v.0).and_then(|x| x.get_mut(v.1)))
     }
 
     fn get_widgets_mut<'b>(
-        widgets: &'b mut IndexMap<u64, Layer<'a>>,
-    ) -> Vec<((u64, u64), &'b mut (dyn Widget + 'a))> {
+        widgets: &'b mut IndexMap<u64, Layer>,
+    ) -> Vec<((u64, u64), &'b mut (dyn Widget + 'static))> {
         widgets
             .iter_mut()
             .filter(|(_, layer)| layer.is_active)
@@ -271,16 +267,17 @@ impl<'a> Context<'a> {
     ) -> Result<Response<Res>, ()>
     where
         R: WidgetConfig<Res, W>,
-        W: Widget + 'a,
+        W: Widget + 'static,
         Res: Sized,
     {
-        match self.to_display.get_mut(&layer_id.id) {
+        match self.to_display.get_mut(&layer_id.id()) {
             Some(layer) => {
                 let (widget, res) = widget.to_widget();
                 Ok(Response {
+                    _layer_id: layer_id.clone(),
                     channel: res,
                     _id: WidgetId::new(
-                        layer_id.id,
+                        layer_id.id(),
                         layer.insert(Box::new(widget)),
                         self.widget_channel_creator.clone(),
                     ),
