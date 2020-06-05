@@ -19,7 +19,7 @@ pub(crate) use responses::{
     LayerChannelReceiver, LayerChannelSender, LayerInstructions, LayerNummerId,
     WidgetChannelReceiver, WidgetChannelSender, WidgetInstruction, WidgetNummerId,
 };
-pub use responses::{LayerId, Response};
+pub use responses::{LayerId, Response, SingularLayerId};
 use std::cell::RefCell;
 use std::rc::Rc;
 

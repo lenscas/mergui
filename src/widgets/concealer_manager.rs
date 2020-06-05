@@ -4,18 +4,15 @@ use quicksilver::graphics::Graphics;
 use quicksilver::{geom::Vector, Result, Window};
 use std::{cell::RefCell, rc::Rc};
 
-pub struct ConcealerManagerConfig<T: PartialEq, R: Sized, W: Widget, E: WidgetConfig<R, W>> {
-    pub concealers: Vec<ConcealerConfig<T, R, W, E>>,
+pub struct ConcealerManagerConfig {
+    pub concealers: Vec<ConcealerConfig>,
 }
-pub struct ConcealerManager<W: Widget> {
-    concealers: Vec<Concealer<W>>,
+pub struct ConcealerManager {
+    concealers: Vec<Concealer>,
     pub active: Rc<RefCell<Option<usize>>>,
 }
-impl<T: PartialEq, R: Sized, W: Widget, C: WidgetConfig<R, W>>
-    WidgetConfig<ConcealerManagerReturn<T, R>, ConcealerManager<W>>
-    for ConcealerManagerConfig<T, R, W, C>
-{
-    fn to_widget(self) -> (ConcealerManager<W>, ConcealerManagerReturn<T, R>) {
+impl WidgetConfig<ConcealerManagerReturn, ConcealerManager> for ConcealerManagerConfig {
+    fn to_widget(self) -> (ConcealerManager, ConcealerManagerReturn) {
         let mut channels = Vec::new();
         let mut widgets = Vec::new();
         self.concealers
@@ -36,22 +33,20 @@ impl<T: PartialEq, R: Sized, W: Widget, C: WidgetConfig<R, W>>
         (manager, channels)
     }
 }
-impl<W: Widget> ConcealerManager<W> {
-    fn get_hovered_mut(&mut self, pos: Vector) -> Option<&mut Concealer<W>> {
+impl ConcealerManager {
+    fn get_hovered_mut(&mut self, pos: Vector) -> Option<&mut Concealer> {
         self.concealers.iter_mut().find(|v| v.contains(pos))
     }
-    fn get_hovered(&self, pos: Vector) -> Option<&Concealer<W>> {
+    fn get_hovered(&self, pos: Vector) -> Option<&Concealer> {
         self.concealers.iter().find(|v| v.contains(pos))
     }
 }
-impl<W: Widget> Widget for ConcealerManager<W> {
+impl Widget for ConcealerManager {
     fn contains(&self, pos: Vector) -> bool {
         self.get_hovered(pos).map(|_| true).unwrap_or(false)
     }
-    fn is_focusable(&self, pos: Vector) -> bool {
-        self.get_hovered(pos)
-            .map(|v| v.is_focusable(pos))
-            .unwrap_or(false)
+    fn is_focusable(&self, _: Vector) -> bool {
+        false
     }
     fn render(&mut self, gfx: &mut Graphics, w: &Window) -> Result<()> {
         self.concealers
@@ -86,22 +81,22 @@ impl<W: Widget> Widget for ConcealerManager<W> {
             (Some(button), Some(cur)) if button.0 != *cur => {
                 let (key, widget) = button;
                 widget.on_click(pos);
-                widget.set_concealing(false);
+                widget.set_is_concealing(true);
                 if let Some(cur_widget) = self.concealers.get_mut(*cur) {
-                    cur_widget.set_concealing(true)
+                    cur_widget.set_is_concealing(false)
                 }
                 current_active.replace(key);
             }
             (Some(button), Some(cur)) if button.0 == *cur => {
                 let (_, widget) = button;
                 widget.on_click(pos);
-                widget.set_concealing(true);
+                widget.set_is_concealing(false);
                 *current_active = None;
             }
             (Some(button), None) => {
                 let (key, widget) = button;
                 widget.on_click(pos);
-                widget.set_concealing(false);
+                widget.set_is_concealing(true);
                 *current_active = Some(key);
             }
             (None, Some(cur)) => {

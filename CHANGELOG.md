@@ -18,6 +18,10 @@ All notable changes to this project are documented in this file.
 - [BREAKING] dropping the LayerId does not cause the layer to be removed. Only if the layer is also empty does that happen now.
 - [BREAKING] LayerId is now !Send.
 - [BREAKING] Context::new() stopped taking the mouse location. There is no way (yet) to get it at the location that you want to create a context.
+- [BREAKING] Reworked how concealers work and are configured. Short description: It now controls a layer instead of list of widgets.
+- [BREAKING] Replaced the iter/iter_mut methods from ConcealerManager. There are no channels to loop over. Instead, they give references to the layers.
+- Add a get_layer/get_layer_mut for ConcealerManager. Gets the layer from a specific Concealer that it manages.
+- Add a SingularLayerId, which is similar to a normal layer, except that it has some restrictions on what users can do with it. It is used for Concealers.
 - Remove unesesary lifetime parameter in Context.
 - Implement clone for LayerId.
 

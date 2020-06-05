@@ -29,12 +29,36 @@ pub(crate) enum WidgetInstruction {
     Drop,
 }
 
+///The same as LayerId, but you can't clone this one
+///Used for widgets that want to take control of a layer
+///For example Widgets::Concealer
+pub struct SingularLayerId(pub(crate) LayerId);
+
+impl SingularLayerId {
+    pub fn into_layer_id(self) -> LayerId {
+        self.0
+    }
+    pub fn add_widget<ReturnChannel, W: Widget + 'static>(
+        &mut self,
+        widget_config: impl WidgetConfig<ReturnChannel, W>,
+    ) -> Response<ReturnChannel> {
+        self.0.add_widget(widget_config)
+    }
+    pub fn get_active(&self) -> bool {
+        self.0.get_active()
+    }
+
+    pub(crate) fn set_is_active(&mut self, is_active: bool) {
+        self.0.set_is_active(is_active)
+    }
+}
+
 ///Used to create widgets at a layer.
 ///Once this and every widget on this layer are dropped, so is the internal layer.
 #[derive(Clone)]
 pub struct LayerId {
     layer: Rc<InternalLayerId>,
-    is_active: Rc<RefCell<bool>>,
+    pub(crate) is_active: Rc<RefCell<bool>>,
     widget_id: Rc<RefCell<WidgetNummerId>>,
     widget_channel: WidgetChannelSender,
 }
