@@ -54,15 +54,21 @@ pub struct Context {
     left_mouse_button_down: bool,
 }
 
+impl Default for Context {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Context {
-    pub fn new(cursor: Vector) -> Self {
+    pub fn new() -> Self {
         let (layer_send, layer_rec) = mpsc::channel();
         let (widget_send, widget_rec) = mpsc::channel();
         Self {
             to_display: IndexMap::new(),
             widget_with_focus: None,
             last_layer_id: 0,
-            mouse_cursor: cursor,
+            mouse_cursor: Vector::new(0., 0.),
             layer_channel: layer_rec,
             layer_channel_creator: layer_send,
             widget_channel: widget_rec,

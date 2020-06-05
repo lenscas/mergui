@@ -51,8 +51,7 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
     //3: Decide which widget currently has focus (if any)
     //4: Decide which widget gets which events (if any).
 
-    //at this point in time, we don't have access to the location of the cursor. Setting it to 0,0 is however good enough for now.
-    let mut context = Context::new((0., 0.).into());
+    let mut context = Context::new();
 
     //we then construct a layer. A layer is used to group and control multiple widgets together.
     //You probably want 1 layer per screen/menu.
