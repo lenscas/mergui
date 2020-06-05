@@ -51,13 +51,12 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
     //3: Decide which widget currently has focus (if any)
     //4: Decide which widget gets which events (if any).
 
-    //at this point in time, we don't have access to the location of the cursor. Setting it to 0,0 is however good enough for now.
-    let mut context = Context::new((0., 0.).into());
+    let mut context = Context::new();
 
     //we then construct a layer. A layer is used to group and control multiple widgets together.
     //You probably want 1 layer per screen/menu.
     //Whenever a layer gets dropped. The widgets that belong to that layer will also be removed.
-    let layer = context.add_layer();
+    let mut layer = context.add_layer();
 
     //Now, our first widget. A simple piece of text.
     let conf = Text {
@@ -69,7 +68,7 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
     //in return we get an Response<()> back
     //Dropping the Response will remove the widget, which is why we store it as _t
     //its other uses will be explained later.
-    let _t = context.add_widget(conf, &layer).unwrap();
+    let _t = layer.add_widget(conf);
 
     //for the next one (and a few others) we also need an image. Lets load it now
     let button = Image::load(&gfx, "button.png").await?;
@@ -89,7 +88,7 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
     };
 
     //in order to explain how to work with responses we are going to make it so the background changes color whenever you click the button
-    let mut button_response = context.add_widget(conf, &layer).unwrap();
+    let mut button_response = layer.add_widget(conf);
 
     //The next widget is a concealer. This is a widget that automatically hides/shows a list of widgets whenever it gets clicked.
     //A good use for it could be a collapsible menu.
@@ -128,7 +127,7 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
         to_widget: PhantomData,
         to_result: PhantomData,
     };
-    let _concealer = context.add_widget(conf, &layer).unwrap();
+    let _concealer = layer.add_widget(conf);
 
     //Now, we get to the input widget. This is a widget that allows the user to insert some text.
     let config = InputConfig {
@@ -141,7 +140,7 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
         start_value: Some(String::from("Text box")),
         cursor_config: Default::default(),
     };
-    let _text_input = context.add_widget(config, &layer).unwrap();
+    let _text_input = layer.add_widget(config);
 
     //The dropdown widget. This gets a list of options and allows the user to select 1 of them.
     let conf = DropDownConfig {
@@ -172,7 +171,7 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
         divider_size: 5.0,
         t: PhantomData,
     };
-    let _dropdown = context.add_widget(conf, &layer).unwrap();
+    let _dropdown = layer.add_widget(conf);
 
     //Ever widget is added. Time to render them and give them events.
     //First, render something to the screen. We do this out of the loop so we don't have to wait for the timers to draw the first frame.

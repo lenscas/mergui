@@ -4,50 +4,49 @@ use crate::{
     WidgetChannelReceiver, WidgetChannelSender, WidgetId, WidgetNummerId,
 };
 use indexmap::IndexMap;
-use quicksilver::graphics::Graphics;
-use quicksilver::input::MouseButton;
-use quicksilver::Result as QuickResult;
-use quicksilver::{geom::Vector, Window};
-use std::sync::mpsc;
+use quicksilver::{
+    geom::Vector, graphics::Graphics, input::MouseButton, Result as QuickResult, Window,
+};
+use std::{cell::RefCell, rc::Rc, sync::mpsc};
 
-struct Layer<'a> {
-    is_active: bool,
-    widgets: IndexMap<WidgetNummerId, Box<dyn Widget + 'a>>,
-    current_id: LayerNummerId,
+struct Layer {
+    is_active: Rc<RefCell<bool>>,
+    widgets: IndexMap<WidgetNummerId, Box<dyn Widget + 'static>>,
+    current_id: Rc<RefCell<LayerNummerId>>,
 }
-impl<'a> Default for Layer<'a> {
+impl Default for Layer {
     fn default() -> Self {
         Self::new()
     }
 }
-impl<'a> Layer<'a> {
+impl Layer {
     pub fn new() -> Self {
         Self {
-            is_active: true,
+            is_active: Rc::new(RefCell::new(true)),
             widgets: Default::default(),
-            current_id: 0,
+            current_id: Rc::new(RefCell::new(0)),
         }
     }
-    pub fn get_mut(&mut self, index: u64) -> Option<&mut (dyn Widget + 'a)> {
+    pub fn get_mut(&mut self, index: u64) -> Option<&mut (dyn Widget + 'static)> {
         self.widgets.get_mut(&index).map(|v| v.as_mut())
     }
     pub fn remove(&mut self, index: u64) {
         self.widgets.remove(&index);
     }
-    pub fn insert(&mut self, widget: Box<dyn Widget + 'a>) -> u64 {
-        self.current_id += 1;
-        self.widgets.insert(self.current_id, widget);
-        self.current_id
+    pub fn insert(&mut self, widget: Box<dyn Widget + 'static>) -> u64 {
+        let mut id = self.current_id.borrow_mut();
+        *id += 1;
+        self.widgets.insert(*id, widget);
+        *id
+    }
+    pub(crate) fn is_active(&self) -> bool {
+        *self.is_active.borrow()
     }
 }
-/*
-///Used by widgets to get the image they need to render.
-pub trait Assets {
-    fn get_image(&self, name: &str) -> &Image;
-}*/
+
 ///This manages the GUI. It contains every widget that needs to be drawn and makes sure they are updated properly
-pub struct Context<'a> {
-    to_display: IndexMap<LayerNummerId, Layer<'a>>,
+pub struct Context {
+    to_display: IndexMap<LayerNummerId, Layer>,
     widget_with_focus: Option<(u64, u64)>,
     last_layer_id: u64,
     mouse_cursor: Vector,
@@ -58,15 +57,21 @@ pub struct Context<'a> {
     left_mouse_button_down: bool,
 }
 
-impl<'a> Context<'a> {
-    pub fn new(cursor: Vector) -> Self {
+impl Default for Context {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Context {
+    pub fn new() -> Self {
         let (layer_send, layer_rec) = mpsc::channel();
         let (widget_send, widget_rec) = mpsc::channel();
         Self {
             to_display: IndexMap::new(),
             widget_with_focus: None,
             last_layer_id: 0,
-            mouse_cursor: cursor,
+            mouse_cursor: Vector::new(0., 0.),
             layer_channel: layer_rec,
             layer_channel_creator: layer_send,
             widget_channel: widget_rec,
@@ -78,23 +83,29 @@ impl<'a> Context<'a> {
     ///Usefull to group widgets together that need to be removed at the same time
     pub fn add_layer(&mut self) -> LayerId {
         self.last_layer_id += 1;
-        self.to_display
-            .insert(self.last_layer_id, Default::default());
-
-        LayerId::new(self.last_layer_id, self.layer_channel_creator.clone())
+        let layer = Layer::new();
+        let id = LayerId::new(
+            self.last_layer_id,
+            self.layer_channel_creator.clone(),
+            layer.is_active.clone(),
+            layer.current_id.clone(),
+            self.widget_channel_creator.clone(),
+        );
+        self.to_display.insert(self.last_layer_id, layer);
+        id
     }
 
-    fn get_focused_widget(&mut self) -> Option<&mut (dyn Widget + 'a)> {
+    fn get_focused_widget(&mut self) -> Option<&mut (dyn Widget + 'static)> {
         self.widget_with_focus
             .and_then(move |v| self.to_display.get_mut(&v.0).and_then(|x| x.get_mut(v.1)))
     }
 
     fn get_widgets_mut<'b>(
-        widgets: &'b mut IndexMap<u64, Layer<'a>>,
-    ) -> Vec<((u64, u64), &'b mut (dyn Widget + 'a))> {
+        widgets: &'b mut IndexMap<u64, Layer>,
+    ) -> Vec<((u64, u64), &'b mut (dyn Widget + 'static))> {
         widgets
             .iter_mut()
-            .filter(|(_, layer)| layer.is_active)
+            .filter(|(_, layer)| layer.is_active())
             .flat_map(|(layer_id, layer)| {
                 layer
                     .widgets
@@ -133,9 +144,9 @@ impl<'a> Context<'a> {
                 LayerInstructions::Drop => {
                     self.to_display.remove(&id);
                 }
-                LayerInstructions::SetIsActive(state) => {
-                    if let Some(v) = self.to_display.get_mut(&id) {
-                        v.is_active = state
+                LayerInstructions::AddWidget(widget, widget_id) => {
+                    if let Some(layer) = self.to_display.get_mut(&id) {
+                        layer.widgets.insert(widget_id, widget);
                     }
                 }
             }
@@ -263,7 +274,8 @@ impl<'a> Context<'a> {
     ///
     ///Returns an Error if the layer does not exist.
     ///
-    /// Otherwise, returns both the id of the widget AND a channel to comunicate with it.
+    ///Otherwise, returns a channel to comunicate with the new widget.
+    ///Note: You can also add a widget using LayerId::add_widget.
     pub fn add_widget<R, W, Res>(
         &mut self,
         widget: R,
@@ -271,16 +283,17 @@ impl<'a> Context<'a> {
     ) -> Result<Response<Res>, ()>
     where
         R: WidgetConfig<Res, W>,
-        W: Widget + 'a,
+        W: Widget + 'static,
         Res: Sized,
     {
-        match self.to_display.get_mut(&layer_id.id) {
+        match self.to_display.get_mut(&layer_id.id()) {
             Some(layer) => {
                 let (widget, res) = widget.to_widget();
                 Ok(Response {
+                    _layer_id: layer_id.clone(),
                     channel: res,
                     _id: WidgetId::new(
-                        layer_id.id,
+                        layer_id.id(),
                         layer.insert(Box::new(widget)),
                         self.widget_channel_creator.clone(),
                     ),

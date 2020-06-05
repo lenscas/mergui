@@ -15,6 +15,12 @@ All notable changes to this project are documented in this file.
 
 ## upcomming
 
+- [BREAKING] dropping the LayerId does not cause the layer to be removed. Only if the layer is also empty does that happen now.
+- [BREAKING] LayerId is now !Send.
+- [BREAKING] Context::new() stopped taking the mouse location. There is no way (yet) to get it at the location that you want to create a context.
+- Remove unesesary lifetime parameter in Context.
+- Implement clone for LayerId.
+
 ## 0.1.0-alpha0.4
 
 - Improve the `all` example
