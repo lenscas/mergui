@@ -22,6 +22,6 @@ There are multiple widgets. The 3 most important ones are
  - Dropdown
  - Text input field.
 
-For a complete list and how to use them, see [examples/all.rs](examples/all.rs).
-You can also see this example in action [here](https://lenscas.github.io/mergui/)
+For a complete list and how to use them, see the [examples](examples). Examples/all.rs has most listed, but doesn't show how to read the state of them.
+You can also see the examples in action [here](https://lenscas.github.io/mergui/)
 
