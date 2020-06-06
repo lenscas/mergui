@@ -54,8 +54,6 @@ async fn app(window: Window, mut gfx: Graphics, mut inputs: Input) -> Result<()>
     let mut context = Context::new();
 
     //we then construct a layer. A layer is used to group and control multiple widgets together.
-    //You probably want 1 layer per screen/menu.
-    //Whenever a layer gets dropped. The widgets that belong to that layer will also be removed.
     let mut layer = context.add_layer();
 
     //Now, our first widget. A simple piece of text.
