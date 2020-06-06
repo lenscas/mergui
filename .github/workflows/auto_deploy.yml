@@ -39,8 +39,9 @@ jobs:
           sh ./online_examples/build.sh
       - name: Make ready for deploy
         #Order is important here, as both folders contain a index.html file, but we only care about the one in `online_examples`
-        run: cp -a ./static/. ./target/wasm32-unknown-unknown/release/examples/
-        run: cp ./online_examples/index.html ./props/index.html
+        run: |
+          cp -a ./static/. ./target/wasm32-unknown-unknown/release/examples/
+          cp ./online_examples/index.html ./props/index.html
       - name: deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
