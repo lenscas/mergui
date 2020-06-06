@@ -5,7 +5,8 @@ All notable changes to this project are documented in this file.
 ## Overview
 
 - [upcomming](#upcomming)
-- [`0.1.0-alpha0.3`](#0.1.0-alpha0.4)
+- [`0.1.0-alpha0.5`](#0.1.0-alpha0.5)
+- [`0.1.0-alpha0.4`](#0.1.0-alpha0.4)
 - [`0.1.0-alpha0.3`](#0.1.0-alpha0.3)
 - [`0.1.0-alpha0.2`](#0.1.0-alpha0.2)
 - [`0.1.0-alpha0.1`](#0.1.0-alpha0.1)
@@ -14,6 +15,8 @@ All notable changes to this project are documented in this file.
 - [`0.0.3`](#003)
 
 ## upcomming
+
+## 0.1.0-alpha0.5
 
 - [BREAKING] dropping the LayerId does not cause the layer to be removed. Only if the layer is also empty does that happen now.
 - [BREAKING] LayerId is now !Send.
