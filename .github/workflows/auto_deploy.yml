@@ -8,7 +8,8 @@ on:
       - "src/**.rs"
       - ".github/workflows/auto_deploy.yml"
       - "static/*"
-      - "examples/all.rs"
+      - "examples/*"
+      - "online_examples/*"
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
