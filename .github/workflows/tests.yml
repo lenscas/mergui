@@ -62,4 +62,6 @@ jobs:
     - name: Install cargo web
       run: cargo install cargo-web
     - name: Run tests
-      run: cargo web check --features stdweb
+      run: |
+        cargo web check --features stdweb
+        sh ./online_examples/check_examples.sh

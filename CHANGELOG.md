@@ -20,6 +20,7 @@ All notable changes to this project are documented in this file.
 - [BREAKING] Context::new() stopped taking the mouse location. There is no way (yet) to get it at the location that you want to create a context.
 - [BREAKING] Reworked how concealers work and are configured. Short description: It now controls a layer instead of list of widgets.
 - [BREAKING] Replaced the iter/iter_mut methods from ConcealerManager. There are no channels to loop over. Instead, they give references to the layers.
+- break up the examples so all.rs isn't the only example.
 - Add a get_layer/get_layer_mut for ConcealerManager. Gets the layer from a specific Concealer that it manages.
 - Add a SingularLayerId, which is similar to a normal layer, except that it has some restrictions on what users can do with it. It is used for Concealers.
 - Remove unesesary lifetime parameter in Context.

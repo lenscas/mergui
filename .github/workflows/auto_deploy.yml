@@ -6,7 +6,6 @@ on:
       - master
     paths:
       - "src/**.rs"
-      - "Cargo.toml"
       - ".github/workflows/auto_deploy.yml"
       - "static/*"
       - "examples/all.rs"
@@ -27,13 +26,23 @@ jobs:
         run: cargo install cargo-web
       - name: Checkout
         uses: actions/checkout@master
-      - name: Build
-        # cargo web deploy can not be given an example to build. So, instead we use a build and prepare the rest ourselves.
-        run: cargo web build --release --example all --features stdweb
+      - name: Build library
+        # Build the library as a whole. Just so we can still see how long that took.
+        run: cargo web build --release --features stdweb
+      - name: Build every example
+        #first, make the folder that will be published.
+        #This needs to happen now, as the build script stores the generated html files there
+        run: |
+          mkdir ./preps
+          sh ./online_examples/build.sh
       - name: Make ready for deploy
-        run: cp -a ./static/. ./target/wasm32-unknown-unknown/release/examples/
+        #Order is important here, as both folders contain a index.html file, but we only care about the one in `online_examples`
+        run: |
+          cp -a ./static/. ./preps/
+          cp -a ./target/wasm32-unknown-unknown/release/examples/. ./preps/
+          cp ./online_examples/index.html ./preps/index.html
       - name: deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./target/wasm32-unknown-unknown/release/examples/
+          publish_dir: ./preps
