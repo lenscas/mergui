@@ -34,8 +34,9 @@ jobs:
       - name: Build every example
         #first, make the folder that will be published.
         #This needs to happen now, as the build script stores the generated html files there
-        run: mkdir ./preps
-        run: sh ./online_examples/build.sh
+        run: |
+          mkdir ./preps
+          sh ./online_examples/build.sh
       - name: Make ready for deploy
         #Order is important here, as both folders contain a index.html file, but we only care about the one in `online_examples`
         run: cp -a ./static/. ./target/wasm32-unknown-unknown/release/examples/
