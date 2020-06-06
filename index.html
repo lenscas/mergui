@@ -21,11 +21,30 @@
 				return canvas;
 			}
 		});
+		function resizeIframe(obj) {
+			obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
+		}
 	</script>
+
 </head>
 
 <body>
-	<script src="all.js"></script>
+	<div style="float:left;width: 10%;">
+		<a href="all">All</a><br>
+		<a href="concealer_manager">Concealer Manager</a>
+	</div>
+	<div style="width: 90%; float:right;">
+		<iframe id="frame" style="width: 100%;height: 100vh;" src="all.html"></iframe>
+	</div>
+	<script>
+		for (let el of document.getElementsByTagName("a")) {
+			el.onclick = e => {
+				e.preventDefault()
+				document.getElementById("frame").src = el.href + ".html"
+
+			}
+		}
+	</script>
 </body>
 
 </html>
