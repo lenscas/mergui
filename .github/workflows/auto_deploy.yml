@@ -4,10 +4,8 @@ on:
     # Sequence of patterns matched against refs/heads
     branches:
       - master
-      - example_improvements
     paths:
       - "src/**.rs"
-      - "Cargo.toml"
       - ".github/workflows/auto_deploy.yml"
       - "static/*"
       - "examples/all.rs"
