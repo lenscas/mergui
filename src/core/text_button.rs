@@ -1,13 +1,12 @@
-use crate::FontStyle;
 use crate::{
     channels::clickable::{BasicClickable as Clickable, ClickSetter as Channel},
     widgets::{Widget, WidgetConfig},
+    FontStyle,
 };
-use quicksilver::graphics::Graphics;
-use quicksilver::{geom::Vector, Result, Window};
-//use quicksilver::prelude::{Image, Img, Rectangle, Transform, Vector, Window};
+use quicksilver::{geom::Vector, graphics::Graphics, Result, Window};
 
 ///Is used to render text to the screen that the user can click on.
+#[derive(Clone)]
 pub struct TextButtonConfig {
     pub text: String,
     pub font_style: FontStyle,

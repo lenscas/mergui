@@ -1,6 +1,4 @@
-use quicksilver::graphics::Graphics;
-
-use quicksilver::{geom::Vector, Window};
+use quicksilver::{geom::Vector, graphics::Graphics, Window};
 
 ///Turns a simple configuration into a real widget that can be drawn and interacted with.
 pub trait WidgetConfig<R: Sized, W: Widget> {

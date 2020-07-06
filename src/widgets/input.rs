@@ -1,17 +1,20 @@
-use crate::widgets::{widget_traits::WidgetConfig, Widget};
-use crate::{channels::InputChannel, FontStyle};
-use quicksilver::geom::{Rectangle, Shape, Vector};
+use crate::{
+    channels::InputChannel,
+    widgets::{widget_traits::WidgetConfig, Widget},
+    FontStyle,
+};
 use quicksilver::{
+    geom::{Rectangle, Shape, Vector},
     graphics::LayoutGlyph,
     graphics::{Color, Graphics},
     Result, Timer, Window,
 };
 
+#[derive(Clone)]
 pub struct PlaceholderConfig {
     pub font: FontStyle,
     pub text: String,
 }
-
 pub struct CursorConfig {
     pub color: Color,
     pub thickness: f32,

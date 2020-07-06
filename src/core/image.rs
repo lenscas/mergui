@@ -1,9 +1,12 @@
 use crate::widgets::{Widget, WidgetConfig};
-use quicksilver::geom::{Rectangle, Vector};
-use quicksilver::graphics::Graphics;
-use quicksilver::{Result, Window};
+use quicksilver::{
+    geom::{Rectangle, Vector},
+    graphics::Graphics,
+    Result, Window,
+};
 //use quicksilver::prelude::{Img, Rectangle, Transform, Vector, Window};
 ///A simple unfocusable, uninteractable image.
+#[derive(Clone)]
 pub struct Image {
     ///name of the image that needs to be rendered
     pub image: quicksilver::graphics::Image,

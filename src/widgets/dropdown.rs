@@ -1,16 +1,17 @@
 use super::{Widget, WidgetConfig};
 use crate::{channels::Dropdown as Channel, FontStyle};
-use quicksilver::geom::Rectangle;
-use quicksilver::geom::Shape;
-use quicksilver::geom::Vector;
-use quicksilver::graphics::Color;
-use quicksilver::graphics::Graphics;
-use quicksilver::graphics::Image;
-use quicksilver::{Result, Window};
+use quicksilver::{
+    geom::Vector,
+    geom::{Rectangle, Shape},
+    graphics::Color,
+    graphics::{Graphics, Image},
+    Result, Window,
+};
 
 use std::{cell::RefCell, marker::PhantomData, rc::Rc};
 
 ///used to configure every value that a dropdown contains.
+#[derive(Clone)]
 pub struct DropDownValueConfig<T: Clone> {
     ///The actual value that is being represented
     pub value: T,

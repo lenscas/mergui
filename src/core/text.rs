@@ -1,9 +1,11 @@
-use crate::widgets::{Widget, WidgetConfig};
-use crate::FontStyle;
-use quicksilver::graphics::Graphics;
-use quicksilver::{geom::Vector, Result, Window};
+use crate::{
+    widgets::{Widget, WidgetConfig},
+    FontStyle,
+};
+use quicksilver::{geom::Vector, graphics::Graphics, Result, Window};
 
 ///Is used to render text to the screen
+#[derive(Clone)]
 pub struct Text {
     pub text: String,
     pub font_style: FontStyle,

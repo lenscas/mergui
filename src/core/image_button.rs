@@ -2,15 +2,18 @@ use crate::{
     channels::clickable::{BasicClickable as Clickable, ClickSetter as Channel},
     widgets::{Widget, WidgetConfig},
 };
-use quicksilver::geom::{Rectangle, Vector};
-use quicksilver::graphics::Color;
-use quicksilver::graphics::Graphics;
-use quicksilver::graphics::Image;
-use quicksilver::{Result, Window};
+use quicksilver::{
+    geom::{Rectangle, Vector},
+    graphics::Color,
+    graphics::Graphics,
+    graphics::Image,
+    Result, Window,
+};
 
 //use quicksilver::prelude::{Blended, Color, Img, Rectangle, Transform, Vector, Window};
 
 ///Similar to the Image widget, except it notifies back when the user clicked on it.
+#[derive(Clone)]
 pub struct ImageButtonConfig {
     pub image: Image,
     pub color: Option<Color>,

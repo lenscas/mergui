@@ -1,7 +1,6 @@
 use super::{ConcealerConfig, Widget, WidgetConfig};
 use crate::{channels::ConcealerManagerReturn, widgets::concealer::Concealer};
-use quicksilver::graphics::Graphics;
-use quicksilver::{geom::Vector, Result, Window};
+use quicksilver::{geom::Vector, graphics::Graphics, Result, Window};
 use std::{cell::RefCell, rc::Rc};
 
 pub struct ConcealerManagerConfig {

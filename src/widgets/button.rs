@@ -1,18 +1,19 @@
 use super::{Widget, WidgetConfig};
-use crate::FontStyle;
 use crate::{
     channels::clickable::{BasicClickable as Clickable, ClickSetter as Channel},
     core::{
         image_button::{ImageButton, ImageButtonConfig},
         text_button::{TextButton, TextButtonConfig},
     },
+    FontStyle,
 };
-use quicksilver::geom::{Rectangle, Vector};
-use quicksilver::graphics::Color;
-use quicksilver::graphics::Graphics;
-use quicksilver::graphics::Image;
-use quicksilver::{Result, Window};
+use quicksilver::{
+    geom::{Rectangle, Vector},
+    graphics::{Color, Graphics, Image},
+    Result, Window,
+};
 
+#[derive(Clone)]
 pub struct ButtonConfig {
     ///The text that will be rendered
     pub text: String,
