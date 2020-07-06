@@ -34,6 +34,9 @@ impl WidgetConfig<ConcealerReturn, Concealer> for ConcealerConfig {
             },
         )
     }
+    fn edit_widget(self, _: Concealer, _: ConcealerReturn) -> (Concealer, ConcealerReturn) {
+        self.to_widget()
+    }
 }
 impl Widget for Concealer {
     fn contains(&self, point: Vector) -> bool {

@@ -31,6 +31,13 @@ impl WidgetConfig<ConcealerManagerReturn, ConcealerManager> for ConcealerManager
         let channels = ConcealerManagerReturn::new(channels, shown);
         (manager, channels)
     }
+    fn edit_widget(
+        self,
+        _: ConcealerManager,
+        _: ConcealerManagerReturn,
+    ) -> (ConcealerManager, ConcealerManagerReturn) {
+        self.to_widget()
+    }
 }
 impl ConcealerManager {
     fn get_hovered_mut(&mut self, pos: Vector) -> Option<&mut Concealer> {

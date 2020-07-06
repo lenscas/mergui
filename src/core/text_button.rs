@@ -28,6 +28,10 @@ impl WidgetConfig<Clickable, TextButton> for TextButtonConfig {
             res,
         )
     }
+    fn edit_widget(self, mut widget: TextButton, r: Clickable) -> (TextButton, Clickable) {
+        widget.button = self;
+        (widget, r)
+    }
 }
 
 impl Widget for TextButton {

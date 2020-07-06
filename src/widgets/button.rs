@@ -60,6 +60,23 @@ impl WidgetConfig<Clickable, Button> for ButtonConfig {
             res,
         )
     }
+    fn edit_widget(self, mut widget: Button, r: Clickable) -> (Button, Clickable) {
+        let (text, r) = TextButtonConfig {
+            text: self.text,
+            font_style: self.font_style,
+        }
+        .edit_widget(widget.text, r);
+        widget.text = text;
+        let (background, r) = ImageButtonConfig {
+            image: self.background,
+            location: self.background_location,
+            color: self.blend_color,
+            hover_color: self.hover_color,
+        }
+        .edit_widget(widget.background, r);
+        widget.background = background;
+        (widget, r)
+    }
 }
 
 impl Widget for Button {

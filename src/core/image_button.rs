@@ -39,6 +39,10 @@ impl WidgetConfig<Clickable, ImageButton> for ImageButtonConfig {
             res,
         )
     }
+    fn edit_widget(self, mut widget: ImageButton, r: Clickable) -> (ImageButton, Clickable) {
+        widget.button = self;
+        (widget, r)
+    }
 }
 
 impl Widget for ImageButton {

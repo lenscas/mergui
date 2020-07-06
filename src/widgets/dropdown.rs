@@ -127,6 +127,27 @@ impl<T: Clone, X: Into<DropDownValueConfig<T>>> WidgetConfig<Channel<T>, DropDow
             channel,
         )
     }
+    fn edit_widget(
+        self,
+        mut widget: DropDown<T>,
+        mut return_channel: Channel<T>,
+    ) -> (DropDown<T>, Channel<T>) {
+        widget.location = self.location;
+        widget.open_button = self.open_button;
+        widget.open_button_size = self.open_button_size;
+        widget.option_height = self.option_height;
+        let values = Rc::new(RefCell::new(
+            self.values.into_iter().map(Into::into).collect(),
+        ));
+        widget.values = values.clone();
+        return_channel.values = values;
+        widget.divider_color = self.divider_color;
+        widget.divider_size = self.divider_size;
+        let selected = Rc::new(RefCell::new(self.selected));
+        widget.selected = selected.clone();
+        return_channel.selected = selected;
+        (widget, return_channel)
+    }
 }
 
 impl<T: Clone> Widget for DropDown<T> {
