@@ -13,5 +13,5 @@ repository = "https://github.com/lenscas/mergui"
 
 [dependencies]
 indexmap = "1.3.2"
-quicksilver = {version="0.4.0-alpha0.3"}
+quicksilver = {git="https://github.com/ryanisaacg/quicksilver", branch="easy-viewports"}
 unicode-normalization = "0.1.12"

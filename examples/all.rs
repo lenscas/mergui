@@ -5,7 +5,7 @@ use quicksilver::graphics::blend::{
 use quicksilver::{
     geom::{Rectangle, Vector},
     graphics::{Color, Graphics, Image, VectorFont},
-    lifecycle::{run, EventStream, Settings, Window},
+    {run, Input, Settings, Window},
     Result,
 };
 
@@ -24,16 +24,16 @@ fn main() {
     );
 }
 
-async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Result<()> {
+async fn app(window: Window, mut gfx: Graphics, mut events: Input) -> Result<()> {
     // Load the Font, just like loading any other asset
     let base_font = VectorFont::load("font.ttf").await?;
     let font = MFont::from_font(&base_font, &gfx, 15.0)?;
-    let mut context = Context::new([0.0, 0.0].into());
+    let mut context = Context::new((0.0, 0.0).into());
     let layer = context.add_layer();
 
     let basic_font_style = FontStyle {
         font: font.clone(),
-        location: Vector::new(20, 20),
+        location: Vector::new(20., 20.),
         color: Color::BLACK,
     };
 
@@ -62,12 +62,12 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
 
     let conf = ButtonConfig {
         background: button.clone(),
-        background_location: Rectangle::new((100, 50), (200, 100)),
+        background_location: Rectangle::new((100., 50.).into(), (200., 100.).into()),
         blend_color: Some(Color::GREEN),
         hover_color: Some(Color::RED),
         font_style: FontStyle {
             font: MFont::from_font(&base_font, &gfx, 20.0)?,
-            location: Vector::new(30, 55),
+            location: Vector::new(30., 55.),
             color: Color::BLUE,
         },
         text: "Some text".into(),
@@ -76,12 +76,12 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
     let conf = ConcealerConfig {
         button: ButtonConfig {
             background: button.clone(),
-            background_location: Rectangle::new((100, 155), (200, 100)),
+            background_location: Rectangle::new((100., 155.).into(), (200., 100.).into()),
             blend_color: Some(Color::GREEN),
             hover_color: Some(Color::RED),
             font_style: FontStyle {
                 font: MFont::from_font(&base_font, &gfx, 20.0)?,
-                location: Vector::new(30, 55),
+                location: Vector::new(30., 55.),
                 color: Color::BLUE,
             },
             text: "Concealer".into(),
@@ -90,12 +90,12 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
             0,
             ButtonConfig {
                 background: button.clone(),
-                background_location: Rectangle::new((310, 155), (200, 100)),
+                background_location: Rectangle::new((310., 155.).into(), (200., 100.).into()),
                 blend_color: Some(Color::GREEN),
                 hover_color: Some(Color::RED),
                 font_style: FontStyle {
                     font: MFont::from_font(&base_font, &gfx, 20.0)?,
-                    location: Vector::new(30, 55),
+                    location: Vector::new(30., 55.),
                     color: Color::BLUE,
                 },
                 text: "Hidden".into(),
@@ -112,7 +112,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
                 "a̐éö̲",
                 FontStyle {
                     font: MFont::from_font(&base_font, &gfx, 30.0)?,
-                    location: Vector::new(10, 55),
+                    location: Vector::new(10., 55.),
                     ..basic_font_style.clone()
                 },
             ),
@@ -120,15 +120,15 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
                 "a̐éö̲",
                 FontStyle {
                     font: MFont::from_font(&base_font, &gfx, 35.0)?,
-                    location: Vector::new(15, 55),
+                    location: Vector::new(15., 55.),
                     ..basic_font_style.clone()
                 },
             ),
         ],
-        location: Rectangle::new((100, 300), (160, 50)),
+        location: Rectangle::new((100., 300.).into(), (160., 50.).into()),
         option_height: 50.0,
         open_button: button.clone(),
-        open_button_size: [100.0, 50.0].into(),
+        open_button_size: (100.0, 50.0).into(),
         selected: Some(0),
         divider_color: Color::BLACK,
         divider_size: 5.0,
@@ -142,7 +142,7 @@ async fn app(window: Window, mut gfx: Graphics, mut events: EventStream) -> Resu
             ..basic_font_style.clone()
         },
         placeholder: None, //Option<PlaceholderConfig>,
-        location: Rectangle::new((100, 355), (160, 50)),
+        location: Rectangle::new((100., 355.).into(), (160., 50.).into()),
         start_value: Some(String::from("a̐éö̲")),
     };
     let _text_input = context.add_widget(config, &layer).unwrap();

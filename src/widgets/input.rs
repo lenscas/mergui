@@ -3,11 +3,10 @@ use crate::{channels::InputChannel, FontStyle};
 use quicksilver::geom::{Rectangle, Shape, Vector};
 use quicksilver::{
     graphics::{Image, LayoutGlyph, PixelFormat, Surface},
-    lifecycle::Window,
+    Window,
     Result,
     {
         graphics::{Color, Graphics},
-        mint::Vector2,
     },
 };
 
@@ -136,22 +135,22 @@ impl Input {
             font,
             self.config.location.x(),
         )?;
-
-        gfx.flush(None)?;
+        
+        gfx.flush_window(window);
         let mut surface = Surface::new(
             gfx,
             Image::from_raw(gfx, None, 512, 512, PixelFormat::RGBA)?,
         )?;
         gfx.fit_to_surface(&surface)?;
         gfx.clear(Color::BLUE);
-        gfx.fill_rect(&Rectangle::new((0, 0), (10, 10)), Color::GREEN);
-        gfx.flush(Some(&surface))?;
+        gfx.fill_rect(&Rectangle::new((0., 0.).into(), (10., 10.).into()), Color::GREEN);
+        gfx.flush_surface(&surface)?;
         //gfx.clear(Color::RED);
         gfx.fit_to_window(&window);
         let image = surface
             .detach()
             .ok_or(quicksilver::QuicksilverError::SurfaceImageError)?;
-        gfx.draw_image(&image, Rectangle::new((10, 10), (512, 512)));
+        gfx.draw_image(&image, Rectangle::new((10., 10.).into(), (512., 512.).into()));
 
         /*
         let offset = Self::calc_offset(
@@ -259,10 +258,10 @@ impl Input {
 }
 
 impl Widget for Input {
-    fn contains(&self, pos: &Vector2<f32>) -> bool {
-        self.config.location.contains((pos.x, pos.y))
+    fn contains(&self, pos: &Vector) -> bool {
+        self.config.location.contains((pos.x, pos.y).into())
     }
-    fn is_focusable(&self, _: &Vector2<f32>) -> bool {
+    fn is_focusable(&self, _: &Vector) -> bool {
         true
     }
     fn render(&mut self, gfx: &mut Graphics, window: &Window) -> Result<()> {
@@ -270,12 +269,12 @@ impl Widget for Input {
         self.draw_text(gfx, window)
     }
 
-    fn get_cursor_on_hover(&self, _: &Vector2<f32>) -> quicksilver::lifecycle::CursorIcon {
-        quicksilver::lifecycle::CursorIcon::Text
+    fn get_cursor_on_hover(&self, _: &Vector) -> quicksilver::CursorIcon {
+        quicksilver::CursorIcon::Text
     }
 
-    fn on_key_press(&mut self, key: quicksilver::lifecycle::Key, state: bool) {
-        use quicksilver::lifecycle::Key::*;
+    fn on_key_press(&mut self, key: quicksilver::input::Key, state: bool) {
+        use quicksilver::input::Key::*;
         if Back == key && state && self.cursor_at_from_left > 0 {
             self.value.remove_char_at(self.cursor_at_from_left - 1);
             self.cursor_at_from_left -= 1;

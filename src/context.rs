@@ -5,9 +5,9 @@ use crate::{
 };
 use indexmap::IndexMap;
 use quicksilver::graphics::Graphics;
-use quicksilver::lifecycle::MouseButton;
-use quicksilver::lifecycle::Window;
-use quicksilver::mint::Vector2;
+use quicksilver::input::MouseButton;
+use quicksilver::Window;
+use quicksilver::geom::Vector;
 use quicksilver::Result as QuickResult;
 use std::sync::mpsc;
 
@@ -51,7 +51,7 @@ pub struct Context<'a> {
     to_display: IndexMap<LayerNummerId, Layer<'a>>,
     widget_with_focus: Option<(u64, u64)>,
     last_layer_id: u64,
-    mouse_cursor: Vector2<f32>,
+    mouse_cursor: Vector,
     layer_channel: LayerChannelReceiver,
     layer_channel_creator: LayerChannelSender,
     widget_channel: WidgetChannelReceiver,
@@ -60,7 +60,7 @@ pub struct Context<'a> {
 }
 
 impl<'a> Context<'a> {
-    pub fn new(cursor: Vector2<f32>) -> Self {
+    pub fn new(cursor: Vector) -> Self {
         let (layer_send, layer_rec) = mpsc::channel();
         let (widget_send, widget_rec) = mpsc::channel();
         Self {
@@ -143,9 +143,9 @@ impl<'a> Context<'a> {
         }
     }
     ///Call this in the event function of the state to update every widget.
-    pub fn event(&mut self, event: &quicksilver::lifecycle::Event, window: &Window) {
+    pub fn event(&mut self, event: &quicksilver::input::Event, window: &Window) {
         self.handle_extern_events();
-        use quicksilver::lifecycle::Event::*;
+        use quicksilver::input::Event::*;
         match event {
             PointerMoved(val) => {
                 let cursor_location = &self.mouse_cursor;
@@ -169,7 +169,7 @@ impl<'a> Context<'a> {
                         widget.set_hover(cursor_location, true);
                         widget.get_cursor_on_hover(cursor_location)
                     })
-                    .unwrap_or(quicksilver::lifecycle::CursorIcon::Default);
+                    .unwrap_or(quicksilver::CursorIcon::Default);
                 widgets
                     .iter_mut()
                     .for_each(|v| v.set_hover(cursor_location, false));
