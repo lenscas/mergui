@@ -136,7 +136,7 @@ impl Input {
             self.config.location.x(),
         )?;
         
-        gfx.flush_window(window);
+        gfx.flush_window(window).expect("could not flush");
         let mut surface = Surface::new(
             gfx,
             Image::from_raw(gfx, None, 512, 512, PixelFormat::RGBA)?,
