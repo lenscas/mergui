@@ -1,7 +1,7 @@
 [package]
 name = "mergui"
 description = "A simple GUI system for use with the quicksilver game engine"
-version = "0.1.0-alpha0.5"
+version = "0.1.0-alpha0.6"
 authors = ["lenscas <lenscas@gmail.com>"]
 categories = ["gui"]
 edition = "2018"
@@ -17,5 +17,5 @@ stdweb = ["quicksilver/stdweb"]
 
 [dependencies]
 indexmap = "1.3.2"
-quicksilver = {version="0.4.0-alpha0.5", default-features=false, features=["ttf","font"]}
+quicksilver = {version="0.4.0-alpha0.6", default-features=false, features=["ttf","font"]}
 unicode-normalization = "0.1.12"
