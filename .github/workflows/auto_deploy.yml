@@ -10,6 +10,7 @@ on:
       - "static/*"
       - "examples/*"
       - "online_examples/*"
+      - "Cargo.toml"
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
