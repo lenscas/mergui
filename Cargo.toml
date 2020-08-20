@@ -1,7 +1,7 @@
 [package]
 name = "mergui"
 description = "A simple GUI system for use with the quicksilver game engine"
-version = "0.1.0-alpha0.6"
+version = "0.1.0-alpha0.7"
 authors = ["lenscas <lenscas@gmail.com>"]
 categories = ["gui"]
 edition = "2018"

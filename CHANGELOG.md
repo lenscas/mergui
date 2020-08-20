@@ -17,7 +17,12 @@ All notable changes to this project are documented in this file.
 
 ## upcomming
 
-## 0.1.0-alpha0.5
+## 0.1.0-alpha0.7
+
+- Update to quicksilver 0.4.0-alpha0.7
+
+## 0.1.0-alpha0.6
+
 - Update to quicksilver 0.4.0-alpha0.6
 
 ## 0.1.0-alpha0.5
