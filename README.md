@@ -1,8 +1,6 @@
-# WARNING!
-
-Mergui follows quicksilver 0.4, which at point of writing is in an alpha stage.
-
 # Mergui
+
+Since quicksilver is no longer actively developped , I no longer use it. As a result, I also stopped using Mergui. I will still respond to pull requests and the like, but don't expect any new features from me.
 
 A simple gui system for the quicksilver engine, originally developed for [Arena keeper](https://github.com/lenscas/arena_keeper_quick) and later ported to quicksilver 0.4 to be used in my yet to be named [card game](https://github.com/lenscas/card_game_client) .
 
