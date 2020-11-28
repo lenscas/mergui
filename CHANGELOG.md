@@ -5,7 +5,9 @@ All notable changes to this project are documented in this file.
 ## Overview
 
 - [upcomming](#upcomming)
-- [`0.1.0-alpha0.5`](#0.1.0-alpha0.6)
+- [`0.1.0-alpha0.8`](#0.1.0-alpha0.8)
+- [`0.1.0-alpha0.7`](#0.1.0-alpha0.7)
+- [`0.1.0-alpha0.6`](#0.1.0-alpha0.6)
 - [`0.1.0-alpha0.5`](#0.1.0-alpha0.5)
 - [`0.1.0-alpha0.4`](#0.1.0-alpha0.4)
 - [`0.1.0-alpha0.3`](#0.1.0-alpha0.3)
@@ -16,6 +18,10 @@ All notable changes to this project are documented in this file.
 - [`0.0.3`](#003)
 
 ## upcomming
+
+## 0.1.0-alpha0.8
+
+- Update to quicksilver 0.4.0
 
 ## 0.1.0-alpha0.7
 
