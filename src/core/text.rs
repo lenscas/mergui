@@ -15,6 +15,11 @@ impl WidgetConfig<(), Text> for Text {
     fn to_widget(self) -> (Text, ()) {
         (self, ())
     }
+    fn edit_widget(self, mut widget: Text, _: ()) -> (Text, ()) {
+        widget.text = self.text;
+        widget.font_style = self.font_style;
+        (widget, ())
+    }
 }
 
 impl Widget for Text {

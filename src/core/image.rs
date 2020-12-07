@@ -17,6 +17,11 @@ impl WidgetConfig<(), Image> for Image {
     fn to_widget(self) -> (Image, ()) {
         (self, ())
     }
+    fn edit_widget(self, mut widget: Image, r: ()) -> (Image, ()) {
+        widget.image = self.image;
+        widget.location = self.location;
+        (widget, r)
+    }
 }
 impl Widget for Image {
     fn contains(&self, _: Vector) -> bool {

@@ -68,6 +68,10 @@ impl WidgetConfig<InputChannel, Input> for InputConfig {
             value,
         )
     }
+    fn edit_widget(self, mut widget: Input, return_channel: InputChannel) -> (Input, InputChannel) {
+        widget.config = self;
+        (widget, return_channel)
+    }
 }
 
 impl Input {
